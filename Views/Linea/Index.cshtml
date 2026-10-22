@@ -1,0 +1,116 @@
+@{
+    ViewData["Title"] = "Líneas de producción";
+    ViewData["Seccion"] = "lineas";
+}
+<div class="page-head">
+    <div>
+        <p class="crumb">Estructura de la empresa</p>
+        <h1>Líneas de producción</h1>
+        <p class="page-sub">Cada línea embotella un tipo de envase y solo los formatos que su máquina admite.</p>
+    </div>
+    <div class="page-actions">
+        <button type="button" class="btn btn-primary" id="btnNuevo">
+            <svg class="ic"><use href="#i-mas" /></svg>Nueva línea
+        </button>
+    </div>
+</div>
+
+<div class="seg-strip" id="segmentos" role="group" aria-label="Filtrar por estado">
+    <button type="button" class="seg" data-estado="activos" aria-pressed="true">Activas <b data-conteo="activos">–</b></button>
+    <button type="button" class="seg" data-estado="inactivos" aria-pressed="false">Inactivas <b data-conteo="inactivos">–</b></button>
+    <button type="button" class="seg" data-estado="" aria-pressed="false">Todas <b data-conteo="todos">–</b></button>
+</div>
+
+<form class="toolbar" id="filtros" role="search" autocomplete="off">
+    <label class="search">
+        <svg class="ic"><use href="#i-buscar" /></svg>
+        <span class="sr-only">Buscar líneas</span>
+        <input type="search" name="buscar" placeholder="Código o nombre de la línea" maxlength="100" />
+    </label>
+    <label class="select-lbl">
+        <span>Planta</span>
+        <select name="plantaId" class="ctl ctl-sm" id="fPlanta"><option value="">Todas</option></select>
+    </label>
+</form>
+
+<div class="tbl">
+    <table class="dt" id="tabla">
+        <thead>
+            <tr>
+                <th scope="col">Código</th>
+                <th scope="col">Línea</th>
+                <th scope="col">Envase</th>
+                <th scope="col" class="num">Velocidad</th>
+                <th scope="col">Formatos</th>
+                <th scope="col">Estado</th>
+                <th scope="col" class="col-acciones"><span class="sr-only">Acciones</span></th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+    <div class="tbl-foot" id="pie"></div>
+</div>
+
+<dialog class="dlg dlg-lg" id="dlgLinea" aria-labelledby="dlgLineaTitulo">
+    <form novalidate>
+        <header class="dlg-hd">
+            <h2 id="dlgLineaTitulo" data-titulo>Registrar línea</h2>
+            <button type="button" class="dlg-x" data-cerrar aria-label="Cerrar"><svg class="ic"><use href="#i-cerrar" /></svg></button>
+        </header>
+        <div class="dlg-bd">
+            <p class="form-alert" data-error-general hidden role="alert"></p>
+            <div class="form-grid">
+                <div class="field">
+                    <label for="lCodigo">Código <span class="req" aria-hidden="true">*</span></label>
+                    <input id="lCodigo" name="codigo" class="ctl mono" maxlength="10" required />
+                    <small class="hint">Ej.: L2. Letras, números y guiones.</small>
+                    <span class="field-error" data-error-de="codigo"></span>
+                </div>
+                <div class="field">
+                    <label for="lNombre">Nombre <span class="req" aria-hidden="true">*</span></label>
+                    <input id="lNombre" name="nombre" class="ctl" maxlength="100" required />
+                    <span class="field-error" data-error-de="nombre"></span>
+                </div>
+                <div class="field">
+                    <label for="lPlanta">Planta <span class="req" aria-hidden="true">*</span></label>
+                    <select id="lPlanta" name="plantaId" class="ctl" data-tipo="numero" required>
+                        <option value="">Seleccione…</option>
+                    </select>
+                    <span class="field-error" data-error-de="plantaId"></span>
+                </div>
+                <div class="field">
+                    <label for="lVelocidad">Velocidad nominal <span class="req" aria-hidden="true">*</span></label>
+                    <div class="ctl-unidad">
+                        <input id="lVelocidad" name="velocidadNominal" class="ctl num" type="number" min="1" max="200000" step="1" inputmode="numeric" data-tipo="numero" required />
+                        <span>bot/h</span>
+                    </div>
+                    <span class="field-error" data-error-de="velocidadNominal"></span>
+                </div>
+                <fieldset class="field field-full">
+                    <legend>Tipo de envase <span class="req" aria-hidden="true">*</span></legend>
+                    <div class="radio-seg" id="lEnvase">
+                        <label><input type="radio" name="tipoEnvase" value="1" data-tipo="numero" /><span>PET</span></label>
+                        <label><input type="radio" name="tipoEnvase" value="2" data-tipo="numero" /><span>Vidrio retornable</span></label>
+                        <label><input type="radio" name="tipoEnvase" value="3" data-tipo="numero" /><span>Lata</span></label>
+                    </div>
+                    <span class="field-error" data-error-de="tipoEnvase"></span>
+                </fieldset>
+                <fieldset class="field field-full">
+                    <legend>Formatos que puede embotellar <span class="req" aria-hidden="true">*</span></legend>
+                    <div class="check-grid" id="lFormatos">
+                        <p class="hint">Primero elija el tipo de envase.</p>
+                    </div>
+                    <span class="field-error" data-error-de="formatoIds"></span>
+                </fieldset>
+            </div>
+        </div>
+        <footer class="dlg-ft">
+            <button type="button" class="btn btn-secondary" data-cerrar>Cancelar</button>
+            <button type="submit" class="btn btn-primary"><svg class="ic"><use href="#i-guardar" /></svg>Guardar</button>
+        </footer>
+    </form>
+</dialog>
+
+@section Scripts {
+    <script src="~/js/linea.js" asp-append-version="true"></script>
+}

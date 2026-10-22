@@ -1,0 +1,177 @@
+@{
+    ViewData["Title"] = "Inicio";
+    ViewData["Seccion"] = "inicio";
+    var nombre = User.FindFirst(ClaimsSpin.NombreCompleto)?.Value ?? string.Empty;
+    var esAdministracion = User.IsInRole(Roles.SuperAdmin) || User.IsInRole(Roles.Administrador);
+}
+<div class="page-head">
+    <div>
+        <p class="crumb">Inicio</p>
+        <h1>Hola, @(nombre.Split(" ")[0])</h1>
+        <p class="page-sub" id="panelSub">Lo que requiere atención hoy y el estado de la cadena: ventas, producto terminado, producción, insumos y pedidos.</p>
+    </div>
+    <div class="page-actions">
+        <a class="btn btn-secondary" href="/alertas"><svg class="ic"><use href="#i-campana" /></svg>Todas las alertas</a>
+    </div>
+</div>
+
+@if (esAdministracion)
+{
+    <details class="setup-plegable" id="setupPlegable" open>
+        <summary>Configuración inicial: <b data-progreso-resumen>–</b> de 9 pasos</summary>
+    <section class="setup" id="setup" aria-labelledby="setupTitulo" data-cargando="true">
+        <header class="setup-hd">
+            <h2 id="setupTitulo">Configuración inicial</h2>
+            <p class="setup-progreso"><b data-progreso>–</b> de 9 pasos completos</p>
+        </header>
+        <ol class="setup-pasos">
+            <li class="setup-paso" data-paso="plantas">
+                <span class="setup-num">01</span>
+                <div class="setup-txt">
+                    <h3>Registrar las plantas</h3>
+                    <p>Cada sede donde se embotella. Agrupa almacenes y líneas.</p>
+                </div>
+                <span class="setup-dato"><b data-dato>–</b> activas</span>
+                <a class="btn btn-secondary btn-sm" href="/plantas">Ir a plantas</a>
+            </li>
+            <li class="setup-paso" data-paso="almacenes">
+                <span class="setup-num">02</span>
+                <div class="setup-txt">
+                    <h3>Registrar los almacenes</h3>
+                    <p>De insumos, de producto terminado y de cuarentena, por planta.</p>
+                </div>
+                <span class="setup-dato"><b data-dato>–</b> activos</span>
+                <a class="btn btn-secondary btn-sm" href="/almacenes">Ir a almacenes</a>
+            </li>
+            <li class="setup-paso" data-paso="lineas">
+                <span class="setup-num">03</span>
+                <div class="setup-txt">
+                    <h3>Registrar las líneas de producción</h3>
+                    <p>Con su tipo de envase, velocidad y los formatos que pueden embotellar.</p>
+                </div>
+                <span class="setup-dato"><b data-dato>–</b> activas</span>
+                <a class="btn btn-secondary btn-sm" href="/lineas">Ir a líneas</a>
+            </li>
+            <li class="setup-paso" data-paso="usuarios">
+                <span class="setup-num">04</span>
+                <div class="setup-txt">
+                    <h3>Crear los usuarios del equipo</h3>
+                    <p>Almacén, planificación, compras y gerencia, cada uno con su rol.</p>
+                </div>
+                <span class="setup-dato"><b data-dato>–</b> activos</span>
+                <a class="btn btn-secondary btn-sm" href="/usuarios">Ir a usuarios</a>
+            </li>
+            <li class="setup-paso" data-paso="proveedores">
+                <span class="setup-num">05</span>
+                <div class="setup-txt">
+                    <h3>Registrar los proveedores</h3>
+                    <p>Nacionales con RUC e importadores, con su contacto.</p>
+                </div>
+                <span class="setup-dato"><b data-dato>–</b> activos</span>
+                <a class="btn btn-secondary btn-sm" href="/proveedores">Ir a proveedores</a>
+            </li>
+            <li class="setup-paso" data-paso="insumos">
+                <span class="setup-num">06</span>
+                <div class="setup-txt">
+                    <h3>Registrar los insumos y su proveedor principal</h3>
+                    <p>Unidades, política de stock, tiempo de entrega y pedido mínimo.</p>
+                </div>
+                <span class="setup-dato"><b data-dato>–</b> activos</span>
+                <a class="btn btn-secondary btn-sm" href="/insumos">Ir a insumos</a>
+            </li>
+            <li class="setup-paso" data-paso="productosConReceta">
+                <span class="setup-num">07</span>
+                <div class="setup-txt">
+                    <h3>Registrar los productos y su receta</h3>
+                    <p>Cada SKU con los insumos que consume por botella, paquete y pallet.</p>
+                </div>
+                <span class="setup-dato"><b data-dato>–</b> con receta</span>
+                <a class="btn btn-secondary btn-sm" href="/productos">Ir a productos</a>
+            </li>
+            <li class="setup-paso" data-paso="insumosConStock">
+                <span class="setup-num">08</span>
+                <div class="setup-txt">
+                    <h3>Cargar el stock inicial</h3>
+                    <p>Registre lo que hay hoy en cada almacén (movimiento «Stock inicial») o haga un conteo físico.</p>
+                </div>
+                <span class="setup-dato"><b data-dato>–</b> insumos con stock</span>
+                <a class="btn btn-secondary btn-sm" href="/movimientos">Ir a movimientos</a>
+            </li>
+            <li class="setup-paso" data-paso="productosConVentas">
+                <span class="setup-num">09</span>
+                <div class="setup-txt">
+                    <h3>Cargar el historial de ventas</h3>
+                    <p>Ventas pasadas por día y producto (ideal: 1 año o más). Son la base del pronóstico de demanda.</p>
+                </div>
+                <span class="setup-dato"><b data-dato>–</b> productos con ventas</span>
+                <a class="btn btn-secondary btn-sm" href="/importar">Importar datos</a>
+            </li>
+        </ol>
+        <p class="setup-error" data-error hidden role="alert"></p>
+    </section>
+    </details>
+}
+
+<div class="panel-grid" id="panel" aria-live="polite">
+    <section class="bloque panel-atencion" aria-labelledby="atencionTitulo">
+        <header class="bloque-hd">
+            <div>
+                <h2 id="atencionTitulo">Requiere atención</h2>
+                <p id="atencionResumen">Revisando…</p>
+            </div>
+            <a class="btn btn-secondary btn-sm" href="/alertas">Ver alertas</a>
+        </header>
+        <ul class="lista-alertas" id="atencion"></ul>
+    </section>
+
+    <section class="bloque" aria-labelledby="pulsoTitulo">
+        <header class="bloque-hd"><h2 id="pulsoTitulo">Esta semana</h2></header>
+        <dl class="pulso" id="pulso"></dl>
+    </section>
+
+    <section class="bloque panel-ancho" aria-labelledby="coberturaTitulo">
+        <header class="bloque-hd">
+            <div>
+                <h2 id="coberturaTitulo">Cobertura de insumos</h2>
+                <p>Días que alcanza el stock al ritmo pronosticado, frente al tiempo de entrega del proveedor (marca vertical).</p>
+            </div>
+            <a class="btn btn-secondary btn-sm" href="/reposicion">Reposición</a>
+        </header>
+        <div class="cobertura" id="cobertura"></div>
+    </section>
+
+    <section class="bloque panel-ancho" aria-labelledby="productosTitulo">
+        <header class="bloque-hd">
+            <div>
+                <h2 id="productosTitulo">Productos</h2>
+                <p id="productosSub">Stock listo para despacho, demanda pronosticada y producción de la semana.</p>
+            </div>
+            <a class="btn btn-secondary btn-sm" href="/pronostico">Pronóstico</a>
+        </header>
+        <div class="tbl tbl-plano">
+            <table class="dt" id="tablaProductos">
+                <thead><tr><th scope="col">Producto</th><th scope="col" class="num">Stock PT</th><th scope="col">Cobertura</th><th scope="col" class="num">Próximas 4 semanas</th><th scope="col">Pronóstico</th><th scope="col" class="num">Producido / programado (semana)</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="bloque" aria-labelledby="pedidosTitulo">
+        <header class="bloque-hd">
+            <div>
+                <h2 id="pedidosTitulo">Próximas llegadas</h2>
+                <p id="pedidosSub"></p>
+            </div>
+            <a class="btn btn-secondary btn-sm" href="/pedidos">Pedidos</a>
+        </header>
+        <ul class="lista-pedidos" id="pedidosPanel"></ul>
+    </section>
+</div>
+
+@section Scripts {
+    @if (esAdministracion)
+    {
+        <script src="~/js/inicio.js" asp-append-version="true"></script>
+    }
+    <script src="~/js/panel.js" asp-append-version="true"></script>
+}

@@ -1,0 +1,150 @@
+@{
+    ViewData["Title"] = "Usuarios";
+    ViewData["Seccion"] = "usuarios";
+    var esSuperAdmin = User.IsInRole(Roles.SuperAdmin);
+    var roles = Roles.Asignables(esSuperAdmin).ToList();
+}
+<div class="page-head">
+    <div>
+        <p class="crumb">Administración</p>
+        <h1>Usuarios</h1>
+        <p class="page-sub">Cada persona entra con su correo y ve solo las secciones de su rol.</p>
+    </div>
+    <div class="page-actions">
+        <button type="button" class="btn btn-primary" id="btnNuevo">
+            <svg class="ic"><use href="#i-mas" /></svg>Nuevo usuario
+        </button>
+    </div>
+</div>
+
+<div class="seg-strip" id="segmentos" role="group" aria-label="Filtrar por estado">
+    <button type="button" class="seg" data-estado="activos" aria-pressed="true">Activos <b data-conteo="activos">–</b></button>
+    <button type="button" class="seg" data-estado="inactivos" aria-pressed="false">Inactivos <b data-conteo="inactivos">–</b></button>
+    <button type="button" class="seg" data-estado="" aria-pressed="false">Todos <b data-conteo="todos">–</b></button>
+</div>
+
+<form class="toolbar" id="filtros" role="search" autocomplete="off">
+    <label class="search">
+        <svg class="ic"><use href="#i-buscar" /></svg>
+        <span class="sr-only">Buscar usuarios</span>
+        <input type="search" name="buscar" placeholder="Nombre o correo" maxlength="100" />
+    </label>
+    <label class="select-lbl">
+        <span>Rol</span>
+        <select name="rol" class="ctl ctl-sm">
+            <option value="">Todos</option>
+            @foreach (var r in roles)
+            {
+                <option value="@r">@Roles.Etiqueta(r)</option>
+            }
+        </select>
+    </label>
+    @if (esSuperAdmin)
+    {
+        <label class="select-lbl">
+            <span>Empresa</span>
+            <select name="empresaId" class="ctl ctl-sm" id="fEmpresa"><option value="">Todas</option></select>
+        </label>
+    }
+</form>
+
+<div class="tbl">
+    <table class="dt" id="tabla" data-superadmin="@(esSuperAdmin ? "true" : "false")">
+        <thead>
+            <tr>
+                <th scope="col">Usuario</th>
+                <th scope="col">Rol</th>
+                @if (esSuperAdmin)
+                {
+                    <th scope="col">Empresa</th>
+                }
+                <th scope="col">Estado</th>
+                <th scope="col" class="col-acciones"><span class="sr-only">Acciones</span></th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+    <div class="tbl-foot" id="pie"></div>
+</div>
+
+<dialog class="dlg" id="dlgUsuario" aria-labelledby="dlgUsuarioTitulo">
+    <form novalidate>
+        <header class="dlg-hd">
+            <h2 id="dlgUsuarioTitulo" data-titulo>Nuevo usuario</h2>
+            <button type="button" class="dlg-x" data-cerrar aria-label="Cerrar"><svg class="ic"><use href="#i-cerrar" /></svg></button>
+        </header>
+        <div class="dlg-bd">
+            <p class="form-alert" data-error-general hidden role="alert"></p>
+            <div class="form-grid">
+                <div class="field field-full">
+                    <label for="uNombre">Nombre completo <span class="req" aria-hidden="true">*</span></label>
+                    <input id="uNombre" name="nombreCompleto" class="ctl" maxlength="120" required autocomplete="off" />
+                    <span class="field-error" data-error-de="nombreCompleto"></span>
+                </div>
+                <div class="field field-full">
+                    <label for="uEmail">Correo <span class="req" aria-hidden="true">*</span></label>
+                    <input id="uEmail" name="email" type="email" class="ctl" maxlength="256" required autocomplete="off" />
+                    <small class="hint" data-solo-edicion hidden>El correo no se puede cambiar: es el usuario de ingreso.</small>
+                    <span class="field-error" data-error-de="email"></span>
+                </div>
+                <div class="field">
+                    <label for="uRol">Rol <span class="req" aria-hidden="true">*</span></label>
+                    <select id="uRol" name="rol" class="ctl" required>
+                        <option value="">Seleccione…</option>
+                        @foreach (var r in roles)
+                        {
+                            <option value="@r">@Roles.Etiqueta(r)</option>
+                        }
+                    </select>
+                    <span class="field-error" data-error-de="rol"></span>
+                </div>
+                @if (esSuperAdmin)
+                {
+                    <div class="field" data-solo-creacion>
+                        <label for="uEmpresa">Empresa <span class="req" aria-hidden="true">*</span></label>
+                        <select id="uEmpresa" name="empresaId" class="ctl" data-tipo="numero" data-opcional required>
+                            <option value="">Seleccione…</option>
+                        </select>
+                        <span class="field-error" data-error-de="empresaId"></span>
+                    </div>
+                }
+                <div class="field field-full" data-solo-creacion>
+                    <label for="uClave">Contraseña temporal <span class="req" aria-hidden="true">*</span></label>
+                    <input id="uClave" name="claveTemporal" type="text" class="ctl mono" maxlength="100" required autocomplete="new-password" />
+                    <small class="hint">Mínimo 8 caracteres, con mayúscula, minúscula y número. El usuario podrá cambiarla al ingresar.</small>
+                    <span class="field-error" data-error-de="claveTemporal"></span>
+                </div>
+            </div>
+        </div>
+        <footer class="dlg-ft">
+            <button type="button" class="btn btn-secondary" data-cerrar>Cancelar</button>
+            <button type="submit" class="btn btn-primary"><svg class="ic"><use href="#i-guardar" /></svg>Guardar</button>
+        </footer>
+    </form>
+</dialog>
+
+<dialog class="dlg dlg-sm" id="dlgClave" aria-labelledby="dlgClaveTitulo">
+    <form novalidate>
+        <header class="dlg-hd">
+            <h2 id="dlgClaveTitulo">Restablecer contraseña</h2>
+            <button type="button" class="dlg-x" data-cerrar aria-label="Cerrar"><svg class="ic"><use href="#i-cerrar" /></svg></button>
+        </header>
+        <div class="dlg-bd">
+            <p class="dlg-msg">Asigne una contraseña temporal a <b data-nombre></b>. También se desbloqueará si estaba bloqueado.</p>
+            <p class="form-alert" data-error-general hidden role="alert"></p>
+            <div class="field">
+                <label for="rClave">Contraseña temporal <span class="req" aria-hidden="true">*</span></label>
+                <input id="rClave" name="claveTemporal" type="text" class="ctl mono" maxlength="100" required autocomplete="new-password" />
+                <span class="field-error" data-error-de="claveTemporal"></span>
+            </div>
+        </div>
+        <footer class="dlg-ft">
+            <button type="button" class="btn btn-secondary" data-cerrar>Cancelar</button>
+            <button type="submit" class="btn btn-primary"><svg class="ic"><use href="#i-llave" /></svg>Restablecer</button>
+        </footer>
+    </form>
+</dialog>
+
+@section Scripts {
+    <script src="~/js/usuario.js" asp-append-version="true"></script>
+}

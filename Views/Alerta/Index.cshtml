@@ -1,0 +1,88 @@
+@{
+    ViewData["Title"] = "Alertas";
+    ViewData["Seccion"] = "alertas";
+}
+<div class="page-head">
+    <div>
+        <p class="crumb">Inicio</p>
+        <h1>Alertas</h1>
+        <p class="page-sub">SPIn revisa el sistema cada pocos minutos: insumos por agotarse o por pedir, pedidos atrasados, producto terminado bajo, programación vencida y estado del pronóstico. Cuando la causa desaparece, la alerta se resuelve sola.</p>
+    </div>
+</div>
+
+<div class="seg-strip" id="segmentos" role="group" aria-label="Filtrar alertas">
+    <button type="button" class="seg" data-estado="activas" aria-pressed="true">Activas <b data-resumen="activas">–</b></button>
+    <button type="button" class="seg" data-estado="importantes" aria-pressed="false"><span class="seg-dot crit"></span>Críticas y altas <b data-resumen="importantes">–</b></button>
+    <button type="button" class="seg" data-estado="descartadas" aria-pressed="false">Descartadas <b data-resumen="descartadas">–</b></button>
+    <button type="button" class="seg" data-estado="resueltas" aria-pressed="false">Resueltas (30 días)</button>
+</div>
+
+<form class="toolbar" id="filtros" role="search" autocomplete="off">
+    <label class="search">
+        <svg class="ic"><use href="#i-buscar" /></svg>
+        <span class="sr-only">Buscar alertas</span>
+        <input type="search" name="buscar" placeholder="Insumo, pedido o producto" maxlength="100" />
+    </label>
+    <label class="select-lbl">
+        <span>Tipo</span>
+        <select name="tipo" class="ctl ctl-sm">
+            <option value="">Todos</option>
+            <option value="1">Insumo por agotarse</option>
+            <option value="2">Insumo por pedir</option>
+            <option value="3">Bajo el stock mínimo</option>
+            <option value="4">Insumo sin proveedor</option>
+            <option value="5">Sobre el stock máximo</option>
+            <option value="6">Pedido atrasado</option>
+            <option value="7">Pedido por llegar</option>
+            <option value="8">Producto terminado bajo</option>
+            <option value="9">Programación vencida</option>
+            <option value="10">Pronóstico desactualizado</option>
+            <option value="11">Pronóstico con error alto</option>
+            <option value="12">Conteo físico abierto</option>
+        </select>
+    </label>
+</form>
+<p class="resumen-linea" id="revisado"></p>
+
+<div class="tbl">
+    <table class="dt" id="tabla">
+        <thead>
+            <tr>
+                <th scope="col">Severidad</th>
+                <th scope="col">Alerta</th>
+                <th scope="col">Tipo</th>
+                <th scope="col">Desde</th>
+                <th scope="col">Estado</th>
+                <th scope="col" class="col-acciones"><span class="sr-only">Acciones</span></th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+    <div class="tbl-foot" id="pie"></div>
+</div>
+
+<dialog class="dlg dlg-sm" id="dlgDescartar" aria-labelledby="dlgDescartarTitulo">
+    <form novalidate>
+        <header class="dlg-hd">
+            <h2 id="dlgDescartarTitulo">Descartar alerta</h2>
+            <button type="button" class="dlg-x" data-cerrar aria-label="Cerrar"><svg class="ic"><use href="#i-cerrar" /></svg></button>
+        </header>
+        <div class="dlg-bd">
+            <p class="dlg-msg" data-resumen></p>
+            <p class="form-alert" data-error-general hidden role="alert"></p>
+            <div class="field">
+                <label for="dMotivo">Motivo (opcional)</label>
+                <input id="dMotivo" name="motivo" class="ctl" maxlength="200" placeholder="Ej.: ya se coordinó con el proveedor" />
+                <span class="field-error" data-error-de="motivo"></span>
+            </div>
+        </div>
+        <footer class="dlg-ft">
+            <button type="button" class="btn btn-secondary" data-cerrar>Cancelar</button>
+            <button type="submit" class="btn btn-primary"><svg class="ic"><use href="#i-check" /></svg>Descartar</button>
+        </footer>
+    </form>
+</dialog>
+
+@section Scripts {
+    <script src="~/js/alertas.js" asp-append-version="true"></script>
+}

@@ -1,0 +1,74 @@
+@{
+    ViewData["Title"] = "Pronóstico de demanda";
+    ViewData["Seccion"] = "pronostico";
+    var puedeRecalcular = Roles.PuedePronostico(User);
+}
+<div class="page-head">
+    <div>
+        <p class="crumb">Planificar</p>
+        <h1>Pronóstico de demanda</h1>
+        <p class="page-sub">Paquetes que se venderán por producto en las próximas semanas. Para cada producto, SPIn prueba cuatro métodos con las últimas semanas reales, elige el de menor error y con él proyecta la demanda. Ese pronóstico, por la receta, define cuánto insumo se necesita.</p>
+    </div>
+    <div class="page-actions">
+        <a class="btn btn-secondary" href="/reposicion"><svg class="ic"><use href="#i-reponer" /></svg>Ver reposición</a>
+        @if (puedeRecalcular)
+        {
+            <button type="button" class="btn btn-primary" id="btnRecalcular"><svg class="ic"><use href="#i-recargar" /></svg>Recalcular pronóstico</button>
+        }
+    </div>
+</div>
+
+<section class="estado-motor" id="estadoMotor" aria-live="polite"><p class="hint">Cargando…</p></section>
+
+<div class="tbl">
+    <table class="dt" id="tabla">
+        <thead>
+            <tr>
+                <th scope="col">Producto</th>
+                <th scope="col">Método elegido</th>
+                <th scope="col">Error (MAPE)</th>
+                <th scope="col" class="num">Historia</th>
+                <th scope="col" class="num">Promedio reciente</th>
+                <th scope="col" class="num">Próximas 4 semanas</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+<p class="nota-sec"><svg class="ic"><use href="#i-alerta" /></svg><span>MAPE: error porcentual promedio en las semanas de validación (lo pronosticado frente a lo que realmente se vendió). Menos de 15 %: bueno; de 15 % a 30 %: aceptable; más de 30 %: bajo. Pulse un producto para ver su gráfico.</span></p>
+
+<section class="bloque detalle-pronostico" id="detalle" hidden aria-labelledby="detalleTitulo">
+    <header class="bloque-hd">
+        <div>
+            <h2 id="detalleTitulo">Producto</h2>
+            <p id="detalleSub"></p>
+        </div>
+        <button type="button" class="icon-btn" id="btnCerrarDetalle" title="Cerrar" aria-label="Cerrar detalle"><svg class="ic"><use href="#i-cerrar" /></svg></button>
+    </header>
+    <div class="grafico" id="graficoPronostico"></div>
+    <div class="detalle-cols">
+        <div>
+            <h3 class="sub-titulo">Comparación de métodos</h3>
+            <table class="tabla-consumo" id="tablaMetodos"><thead><tr><th>Método</th><th class="num">MAPE</th><th></th></tr></thead><tbody></tbody></table>
+            <p class="hint" id="detalleNota"></p>
+        </div>
+        <div>
+            <h3 class="sub-titulo">Pronóstico semanal (paquetes)</h3>
+            <table class="tabla-consumo" id="tablaSemanas"><thead><tr><th>Semana del</th><th class="num">Pronóstico</th><th class="num">Rango 90 %</th></tr></thead><tbody></tbody></table>
+        </div>
+    </div>
+</section>
+
+<details class="bloque historial-ejec">
+    <summary class="bloque-hd"><h2>Historial de entrenamientos</h2><span class="hint">Últimos 15</span></summary>
+    <div class="tbl">
+        <table class="dt" id="tablaEjecuciones">
+            <thead><tr><th scope="col">Fecha</th><th scope="col">Origen</th><th scope="col">Resultado</th><th scope="col" class="num">Productos</th><th scope="col" class="num">MAPE promedio</th><th scope="col" class="num">Duración</th><th scope="col">Usuario</th></tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</details>
+
+@section Scripts {
+    <script src="~/js/pronostico.js" asp-append-version="true"></script>
+}

@@ -1,0 +1,85 @@
+@{
+    ViewData["Title"] = "Empresas";
+    ViewData["Seccion"] = "empresas";
+}
+<div class="page-head">
+    <div>
+        <p class="crumb">Administración · Solo superadministrador</p>
+        <h1>Empresas</h1>
+        <p class="page-sub">Embotelladoras que usan SPIn. Cada una ve únicamente sus propios datos.</p>
+    </div>
+    <div class="page-actions">
+        <button type="button" class="btn btn-primary" id="btnNuevo">
+            <svg class="ic"><use href="#i-mas" /></svg>Nueva empresa
+        </button>
+    </div>
+</div>
+
+<div class="seg-strip" id="segmentos" role="group" aria-label="Filtrar por estado">
+    <button type="button" class="seg" data-estado="activos" aria-pressed="true">Activas <b data-conteo="activos">–</b></button>
+    <button type="button" class="seg" data-estado="inactivos" aria-pressed="false">Inactivas <b data-conteo="inactivos">–</b></button>
+    <button type="button" class="seg" data-estado="" aria-pressed="false">Todas <b data-conteo="todos">–</b></button>
+</div>
+
+<form class="toolbar" id="filtros" role="search" autocomplete="off">
+    <label class="search">
+        <svg class="ic"><use href="#i-buscar" /></svg>
+        <span class="sr-only">Buscar empresas</span>
+        <input type="search" name="buscar" placeholder="RUC, razón social o nombre comercial" maxlength="100" />
+    </label>
+</form>
+
+<div class="tbl">
+    <table class="dt" id="tabla">
+        <thead>
+            <tr>
+                <th scope="col">RUC</th>
+                <th scope="col">Empresa</th>
+                <th scope="col" class="num">Plantas</th>
+                <th scope="col" class="num">Usuarios</th>
+                <th scope="col">Estado</th>
+                <th scope="col" class="col-acciones"><span class="sr-only">Acciones</span></th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+    <div class="tbl-foot" id="pie"></div>
+</div>
+
+<dialog class="dlg" id="dlgEmpresa" aria-labelledby="dlgEmpresaTitulo">
+    <form novalidate>
+        <header class="dlg-hd">
+            <h2 id="dlgEmpresaTitulo" data-titulo>Registrar empresa</h2>
+            <button type="button" class="dlg-x" data-cerrar aria-label="Cerrar"><svg class="ic"><use href="#i-cerrar" /></svg></button>
+        </header>
+        <div class="dlg-bd">
+            <p class="form-alert" data-error-general hidden role="alert"></p>
+            <div class="form-grid">
+                <div class="field">
+                    <label for="eRuc">RUC <span class="req" aria-hidden="true">*</span></label>
+                    <input id="eRuc" name="ruc" class="ctl mono" maxlength="11" inputmode="numeric" required />
+                    <span class="field-error" data-error-de="ruc"></span>
+                </div>
+                <div class="field">
+                    <label for="eComercial">Nombre comercial</label>
+                    <input id="eComercial" name="nombreComercial" class="ctl" maxlength="100" />
+                    <span class="field-error" data-error-de="nombreComercial"></span>
+                </div>
+                <div class="field field-full">
+                    <label for="eRazon">Razón social <span class="req" aria-hidden="true">*</span></label>
+                    <input id="eRazon" name="razonSocial" class="ctl" maxlength="150" required />
+                    <span class="field-error" data-error-de="razonSocial"></span>
+                </div>
+            </div>
+            <p class="hint">Después de registrarla, cree su usuario Administrador en <b>Usuarios</b>.</p>
+        </div>
+        <footer class="dlg-ft">
+            <button type="button" class="btn btn-secondary" data-cerrar>Cancelar</button>
+            <button type="submit" class="btn btn-primary"><svg class="ic"><use href="#i-guardar" /></svg>Guardar</button>
+        </footer>
+    </form>
+</dialog>
+
+@section Scripts {
+    <script src="~/js/empresa.js" asp-append-version="true"></script>
+}

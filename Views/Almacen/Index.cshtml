@@ -1,0 +1,111 @@
+@{
+    ViewData["Title"] = "Almacenes";
+    ViewData["Seccion"] = "almacenes";
+}
+<div class="page-head">
+    <div>
+        <p class="crumb">Estructura de la empresa</p>
+        <h1>Almacenes</h1>
+        <p class="page-sub">Dónde se guardan los insumos, el producto terminado y lo que espera control de calidad.</p>
+    </div>
+    <div class="page-actions">
+        <button type="button" class="btn btn-primary" id="btnNuevo">
+            <svg class="ic"><use href="#i-mas" /></svg>Nuevo almacén
+        </button>
+    </div>
+</div>
+
+<div class="seg-strip" id="segmentos" role="group" aria-label="Filtrar por estado">
+    <button type="button" class="seg" data-estado="activos" aria-pressed="true">Activos <b data-conteo="activos">–</b></button>
+    <button type="button" class="seg" data-estado="inactivos" aria-pressed="false">Inactivos <b data-conteo="inactivos">–</b></button>
+    <button type="button" class="seg" data-estado="" aria-pressed="false">Todos <b data-conteo="todos">–</b></button>
+</div>
+
+<form class="toolbar" id="filtros" role="search" autocomplete="off">
+    <label class="search">
+        <svg class="ic"><use href="#i-buscar" /></svg>
+        <span class="sr-only">Buscar almacenes</span>
+        <input type="search" name="buscar" placeholder="Código o nombre del almacén" maxlength="100" />
+    </label>
+    <label class="select-lbl">
+        <span>Planta</span>
+        <select name="plantaId" class="ctl ctl-sm" id="fPlanta"><option value="">Todas</option></select>
+    </label>
+    <label class="select-lbl">
+        <span>Tipo</span>
+        <select name="tipo" class="ctl ctl-sm">
+            <option value="">Todos</option>
+            <option value="1">Insumos</option>
+            <option value="2">Producto terminado</option>
+            <option value="3">Cuarentena</option>
+        </select>
+    </label>
+</form>
+
+<div class="tbl">
+    <table class="dt" id="tabla">
+        <thead>
+            <tr>
+                <th scope="col">Código</th>
+                <th scope="col">Almacén</th>
+                <th scope="col">Planta</th>
+                <th scope="col">Tipo</th>
+                <th scope="col">Estado</th>
+                <th scope="col" class="col-acciones"><span class="sr-only">Acciones</span></th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+    <div class="tbl-foot" id="pie"></div>
+</div>
+
+<dialog class="dlg" id="dlgAlmacen" aria-labelledby="dlgAlmacenTitulo">
+    <form novalidate>
+        <header class="dlg-hd">
+            <h2 id="dlgAlmacenTitulo" data-titulo>Registrar almacén</h2>
+            <button type="button" class="dlg-x" data-cerrar aria-label="Cerrar"><svg class="ic"><use href="#i-cerrar" /></svg></button>
+        </header>
+        <div class="dlg-bd">
+            <p class="form-alert" data-error-general hidden role="alert"></p>
+            <div class="form-grid">
+                <div class="field">
+                    <label for="aCodigo">Código <span class="req" aria-hidden="true">*</span></label>
+                    <input id="aCodigo" name="codigo" class="ctl mono" maxlength="10" required />
+                    <small class="hint">Ej.: LUR-INS. Letras, números y guiones.</small>
+                    <span class="field-error" data-error-de="codigo"></span>
+                </div>
+                <div class="field">
+                    <label for="aNombre">Nombre <span class="req" aria-hidden="true">*</span></label>
+                    <input id="aNombre" name="nombre" class="ctl" maxlength="100" required />
+                    <span class="field-error" data-error-de="nombre"></span>
+                </div>
+                <div class="field">
+                    <label for="aPlanta">Planta <span class="req" aria-hidden="true">*</span></label>
+                    <select id="aPlanta" name="plantaId" class="ctl" data-tipo="numero" required>
+                        <option value="">Seleccione…</option>
+                    </select>
+                    <span class="field-error" data-error-de="plantaId"></span>
+                </div>
+                <div class="field">
+                    <label for="aTipo">Tipo <span class="req" aria-hidden="true">*</span></label>
+                    <select id="aTipo" name="tipo" class="ctl" data-tipo="numero" required>
+                        <option value="">Seleccione…</option>
+                        <option value="1">Insumos</option>
+                        <option value="2">Producto terminado</option>
+                        <option value="3">Cuarentena</option>
+                    </select>
+                    <small class="hint">Cuarentena: lo recibido que aún no libera control de calidad.</small>
+                    <span class="field-error" data-error-de="tipo"></span>
+                </div>
+            </div>
+        </div>
+        <footer class="dlg-ft">
+            <button type="button" class="btn btn-secondary" data-cerrar>Cancelar</button>
+            <button type="submit" class="btn btn-primary"><svg class="ic"><use href="#i-guardar" /></svg>Guardar</button>
+        </footer>
+    </form>
+</dialog>
+
+@section Scripts {
+    <script src="~/js/almacen.js" asp-append-version="true"></script>
+}

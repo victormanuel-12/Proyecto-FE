@@ -1,0 +1,129 @@
+@{
+    ViewData["Title"] = "Proveedores";
+    ViewData["Seccion"] = "proveedores";
+    var puedeAbastecer = Roles.PuedeAbastecimiento(User);
+}
+<div class="page-head">
+    <div>
+        <p class="crumb">Abastecer</p>
+        <h1>Proveedores</h1>
+        <p class="page-sub">Nacionales e importadores. Sus precios y tiempos de entrega se asignan a cada insumo desde la sección Insumos.</p>
+    </div>
+    @if (puedeAbastecer)
+    {
+        <div class="page-actions">
+            <button type="button" class="btn btn-primary" id="btnNuevo">
+                <svg class="ic"><use href="#i-mas" /></svg>Nuevo proveedor
+            </button>
+        </div>
+    }
+</div>
+
+<div class="seg-strip" id="segmentos" role="group" aria-label="Filtrar por estado">
+    <button type="button" class="seg" data-estado="activos" aria-pressed="true">Activos <b data-conteo="activos">–</b></button>
+    <button type="button" class="seg" data-estado="inactivos" aria-pressed="false">Inactivos <b data-conteo="inactivos">–</b></button>
+    <button type="button" class="seg" data-estado="" aria-pressed="false">Todos <b data-conteo="todos">–</b></button>
+</div>
+
+<form class="toolbar" id="filtros" role="search" autocomplete="off">
+    <label class="search">
+        <svg class="ic"><use href="#i-buscar" /></svg>
+        <span class="sr-only">Buscar proveedores</span>
+        <input type="search" name="buscar" placeholder="RUC, razón social o nombre comercial" maxlength="100" />
+    </label>
+    <label class="select-lbl">
+        <span>Origen</span>
+        <select name="extranjeros" class="ctl ctl-sm">
+            <option value="">Todos</option>
+            <option value="false">Del Perú</option>
+            <option value="true">Del extranjero</option>
+        </select>
+    </label>
+</form>
+
+<div class="tbl">
+    <table class="dt" id="tabla" data-puede-abastecer="@(puedeAbastecer ? "true" : "false")">
+        <thead>
+            <tr>
+                <th scope="col">Proveedor</th>
+                <th scope="col">RUC / País</th>
+                <th scope="col">Contacto</th>
+                <th scope="col" class="num">Insumos</th>
+                <th scope="col">Estado</th>
+                <th scope="col" class="col-acciones"><span class="sr-only">Acciones</span></th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+    <div class="tbl-foot" id="pie"></div>
+</div>
+
+<datalist id="paises">
+    <option value="Perú"></option>
+    <option value="China"></option>
+    <option value="Colombia"></option>
+    <option value="México"></option>
+    <option value="Chile"></option>
+    <option value="Brasil"></option>
+    <option value="Ecuador"></option>
+    <option value="Estados Unidos"></option>
+    <option value="España"></option>
+    <option value="India"></option>
+</datalist>
+
+<dialog class="dlg" id="dlgProveedor" aria-labelledby="dlgProveedorTitulo">
+    <form novalidate>
+        <header class="dlg-hd">
+            <h2 id="dlgProveedorTitulo" data-titulo>Registrar proveedor</h2>
+            <button type="button" class="dlg-x" data-cerrar aria-label="Cerrar"><svg class="ic"><use href="#i-cerrar" /></svg></button>
+        </header>
+        <div class="dlg-bd">
+            <p class="form-alert" data-error-general hidden role="alert"></p>
+            <div class="form-grid">
+                <div class="field">
+                    <label for="vPais">País <span class="req" aria-hidden="true">*</span></label>
+                    <input id="vPais" name="pais" class="ctl" maxlength="60" list="paises" required />
+                    <span class="field-error" data-error-de="pais"></span>
+                </div>
+                <div class="field" id="campoRuc">
+                    <label for="vRuc">RUC <span class="req" aria-hidden="true">*</span></label>
+                    <input id="vRuc" name="ruc" class="ctl mono" maxlength="11" inputmode="numeric" />
+                    <span class="field-error" data-error-de="ruc"></span>
+                </div>
+                <div class="field field-full">
+                    <label for="vRazon">Razón social <span class="req" aria-hidden="true">*</span></label>
+                    <input id="vRazon" name="razonSocial" class="ctl" maxlength="150" required />
+                    <span class="field-error" data-error-de="razonSocial"></span>
+                </div>
+                <div class="field field-full">
+                    <label for="vComercial">Nombre comercial</label>
+                    <input id="vComercial" name="nombreComercial" class="ctl" maxlength="100" />
+                    <span class="field-error" data-error-de="nombreComercial"></span>
+                </div>
+                <div class="field">
+                    <label for="vContacto">Persona de contacto</label>
+                    <input id="vContacto" name="contacto" class="ctl" maxlength="100" />
+                    <span class="field-error" data-error-de="contacto"></span>
+                </div>
+                <div class="field">
+                    <label for="vTelefono">Teléfono</label>
+                    <input id="vTelefono" name="telefono" type="tel" class="ctl" maxlength="30" />
+                    <span class="field-error" data-error-de="telefono"></span>
+                </div>
+                <div class="field field-full">
+                    <label for="vEmail">Correo</label>
+                    <input id="vEmail" name="email" type="email" class="ctl" maxlength="256" />
+                    <span class="field-error" data-error-de="email"></span>
+                </div>
+            </div>
+        </div>
+        <footer class="dlg-ft">
+            <button type="button" class="btn btn-secondary" data-cerrar>Cancelar</button>
+            <button type="submit" class="btn btn-primary"><svg class="ic"><use href="#i-guardar" /></svg>Guardar</button>
+        </footer>
+    </form>
+</dialog>
+
+@section Scripts {
+    <script src="~/js/proveedor.js" asp-append-version="true"></script>
+}

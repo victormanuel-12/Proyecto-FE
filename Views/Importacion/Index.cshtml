@@ -1,0 +1,86 @@
+@{
+    ViewData["Title"] = "Importar datos";
+    ViewData["Seccion"] = "importar";
+}
+<div class="page-head">
+    <div>
+        <p class="crumb">Administración</p>
+        <h1>Importar datos desde Excel</h1>
+        <p class="page-sub">Carga masiva para empezar rápido. Siga el orden de la lista: cada tipo usa los datos de los anteriores. Nada se guarda hasta que revise la vista previa y confirme; si una fila falla, no se importa ninguna.</p>
+    </div>
+</div>
+
+<div class="imp-pasos">
+    <ul class="imp-tipos" id="tipos" aria-label="Qué desea importar"></ul>
+
+    <section class="imp-panel" id="panel" aria-live="polite">
+        <div class="imp-sec">
+            <h2 id="tTitulo">Cargando…</h2>
+            <p class="page-sub" id="tDescripcion"></p>
+            <p class="hint" id="tRequisito" hidden></p>
+        </div>
+
+        <div class="imp-sec">
+            <h3 class="imp-paso"><span class="num-paso">1</span>Descargue la plantilla</h3>
+            <p class="hint">Trae las columnas, filas de ejemplo, instrucciones y los valores válidos con los datos actuales de su empresa. También puede subir un .csv con los mismos encabezados.</p>
+            <p style="margin-top:10px"><a class="btn btn-secondary btn-sm" id="btnPlantilla" href="#"><svg class="ic"><use href="#i-descargar" /></svg>Descargar plantilla .xlsx</a></p>
+            <details style="margin-top:12px">
+                <summary class="hint" style="cursor:pointer">Ver columnas</summary>
+                <table class="imp-cols" style="margin-top:8px">
+                    <thead><tr><th scope="col">Columna</th><th scope="col">Obligatoria</th><th scope="col">Qué escribir</th><th scope="col">Ejemplo</th></tr></thead>
+                    <tbody id="tColumnas"></tbody>
+                </table>
+            </details>
+        </div>
+
+        <form class="imp-sec" id="formArchivo" novalidate>
+            <h3 class="imp-paso"><span class="num-paso">2</span>Suba el archivo y revíselo</h3>
+            <p class="form-alert" data-error-general hidden role="alert"></p>
+            <div class="archivo" id="zonaArchivo">
+                <svg class="ic"><use href="#i-hoja" /></svg>
+                <input type="file" name="archivo" id="archivo" accept=".xlsx,.csv" />
+                <span class="hint">.xlsx o .csv · máximo 5 MB y 20 000 filas</span>
+            </div>
+            <span class="field-error" data-error-de="archivo"></span>
+            <div class="imp-opciones">
+                <div class="field" id="campoModo">
+                    <label for="modo">Si el registro ya existe</label>
+                    <select id="modo" name="modo" class="ctl ctl-sm"></select>
+                </div>
+                <div class="field" id="campoFecha" hidden>
+                    <label for="fecha" id="lblFecha">Vigente desde</label>
+                    <input type="date" id="fecha" name="fecha" class="ctl ctl-sm" />
+                    <span class="field-error" data-error-de="fecha"></span>
+                </div>
+            </div>
+            <p style="margin-top:12px"><button type="submit" class="btn btn-primary"><svg class="ic"><use href="#i-buscar" /></svg>Revisar archivo</button></p>
+        </form>
+
+        <div class="imp-sec" id="vista" hidden>
+            <h3 class="imp-paso"><span class="num-paso">3</span>Vista previa y confirmación</h3>
+            <dl class="cifras" id="cifras"></dl>
+            <p class="hint" id="noReconocidas" hidden></p>
+            <div id="errores" hidden>
+                <p class="form-alert" role="alert"><svg class="ic"><use href="#i-error" /></svg><span id="erroresTexto"></span></p>
+                <div class="tbl">
+                    <table class="dt">
+                        <thead><tr><th scope="col" class="num">Fila</th><th scope="col">Columna</th><th scope="col">Problema</th></tr></thead>
+                        <tbody id="erroresFilas"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div id="muestraBox" hidden>
+                <p class="hint">Primeras operaciones:</p>
+                <ol class="muestra" id="muestra"></ol>
+            </div>
+            <div class="imp-acciones">
+                <button type="button" class="btn btn-primary" id="btnConfirmar"><svg class="ic"><use href="#i-check" /></svg>Confirmar importación</button>
+                <button type="button" class="btn btn-secondary" id="btnOtro">Subir otro archivo</button>
+            </div>
+        </div>
+    </section>
+</div>
+
+@section Scripts {
+    <script src="~/js/importacion.js" asp-append-version="true"></script>
+}

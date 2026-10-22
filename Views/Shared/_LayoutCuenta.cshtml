@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"] · SPIn</title>
+    <link rel="icon" href="~/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="~/css/spin.css" asp-append-version="true" />
+</head>
+<body class="auth-body">
+    <partial name="_Iconos" />
+    <div class="auth">
+        <section class="auth-brand" aria-hidden="true">
+            <div class="logo logo-lg"><span class="logo-mk"></span>SPIn</div>
+            <p class="auth-claim">Sepa qué insumo pedir, cuándo y cuánto, antes de que se detenga una línea.</p>
+            <svg class="auth-chart" viewBox="0 0 420 180" preserveAspectRatio="none">
+                <path class="auth-chart-grid" d="M0 45H420M0 90H420M0 135H420" />
+                <path class="auth-chart-rop" d="M0 104H420" />
+                <path class="auth-chart-line" d="M0 38 L70 62 L140 86 L190 104 L240 128 L262 134 L262 30 L330 58 L420 92" />
+                <path class="auth-chart-cut" d="M262 18V160" />
+            </svg>
+            <ul class="auth-legend">
+                <li><i class="lg-line"></i>Stock proyectado</li>
+                <li><i class="lg-rop"></i>Punto de reorden</li>
+                <li><i class="lg-cut"></i>Llegada del pedido</li>
+            </ul>
+        </section>
+        <main class="auth-panel">
+            @RenderBody()
+        </main>
+    </div>
+</body>
+</html>

@@ -1,0 +1,200 @@
+@{
+    ViewData["Title"] = "Ventas";
+    ViewData["Seccion"] = "ventas";
+    var puedeVentas = Roles.PuedeVentas(User);
+    var puedeImportar = Roles.PuedeImportar(User);
+}
+<div class="page-head">
+    <div>
+        <p class="crumb">Vender</p>
+        <h1>Ventas y despachos</h1>
+        <p class="page-sub">Paquetes vendidos por día, producto y canal. Este historial es la demanda que usará el pronóstico. Las ventas no se borran: se anulan con motivo.</p>
+    </div>
+    <div class="page-actions">
+        @if (puedeImportar)
+        {
+            <a class="btn btn-secondary" href="/importar?tipo=ventas"><svg class="ic"><use href="#i-subir" /></svg>Importar historial</a>
+        }
+        @if (puedeVentas)
+        {
+            <button type="button" class="btn btn-primary" id="btnNuevo"><svg class="ic"><use href="#i-mas" /></svg>Registrar venta</button>
+        }
+    </div>
+</div>
+
+<section class="bloque demanda" aria-labelledby="demandaTitulo">
+    <header class="bloque-hd">
+        <div>
+            <h2 id="demandaTitulo">Demanda semanal</h2>
+            <p id="demandaSub">Paquetes vendidos por semana (lunes a domingo).</p>
+        </div>
+        <div class="demanda-ctl">
+            <label class="select-lbl">
+                <span>Producto</span>
+                <select class="ctl ctl-sm" id="gProducto"><option value="">Todos</option></select>
+            </label>
+            <div class="radio-seg" role="radiogroup" aria-label="Periodo del gráfico">
+                <label><input type="radio" name="gSemanas" value="13" /><span>13 sem.</span></label>
+                <label><input type="radio" name="gSemanas" value="26" checked /><span>26 sem.</span></label>
+                <label><input type="radio" name="gSemanas" value="52" /><span>52 sem.</span></label>
+            </div>
+        </div>
+    </header>
+    <div class="grafico" id="grafico" aria-live="polite"></div>
+    <p class="nota-sec" id="historialNota"><svg class="ic"><use href="#i-alerta" /></svg><span></span></p>
+</section>
+
+<form class="toolbar" id="filtros" role="search" autocomplete="off">
+    <label class="select-lbl">
+        <span>Producto</span>
+        <select name="productoId" class="ctl ctl-sm" id="fProducto"><option value="">Todos</option></select>
+    </label>
+    <label class="select-lbl">
+        <span>Canal</span>
+        <select name="canal" class="ctl ctl-sm">
+            <option value="">Todos</option>
+            <option value="1">Mayorista</option>
+            <option value="2">Canal tradicional</option>
+            <option value="3">Canal moderno</option>
+            <option value="4">Distribuidor</option>
+            <option value="5">Otro</option>
+        </select>
+    </label>
+    <label class="select-lbl">
+        <span>Origen</span>
+        <select name="origen" class="ctl ctl-sm">
+            <option value="">Todos</option>
+            <option value="1">Registro manual</option>
+            <option value="2">Importación</option>
+        </select>
+    </label>
+    <label class="select-lbl"><span>Desde</span><input type="date" name="desde" class="ctl ctl-sm" /></label>
+    <label class="select-lbl"><span>Hasta</span><input type="date" name="hasta" class="ctl ctl-sm" /></label>
+    <label class="select-lbl">
+        <span>Anuladas</span>
+        <select name="anuladas" class="ctl ctl-sm">
+            <option value="">Ocultar</option>
+            <option value="true">Mostrar</option>
+        </select>
+    </label>
+</form>
+
+<p class="resumen-linea" id="resumen" aria-live="polite"></p>
+
+<div class="tbl">
+    <table class="dt" id="tabla" data-puede-ventas="@(puedeVentas ? "true" : "false")">
+        <thead>
+            <tr>
+                <th scope="col">N°</th>
+                <th scope="col">Fecha</th>
+                <th scope="col">Producto</th>
+                <th scope="col">Canal</th>
+                <th scope="col" class="num">Paquetes</th>
+                <th scope="col">Stock</th>
+                <th scope="col">Documento</th>
+                <th scope="col">Registró</th>
+                <th scope="col" class="col-acciones"><span class="sr-only">Acciones</span></th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+    <div class="tbl-foot" id="pie"></div>
+</div>
+
+<dialog class="dlg" id="dlgVenta" aria-labelledby="dlgVentaTitulo">
+    <form novalidate>
+        <header class="dlg-hd">
+            <h2 id="dlgVentaTitulo">Registrar venta</h2>
+            <button type="button" class="dlg-x" data-cerrar aria-label="Cerrar"><svg class="ic"><use href="#i-cerrar" /></svg></button>
+        </header>
+        <div class="dlg-bd">
+            <p class="form-alert" data-error-general hidden role="alert"></p>
+            <div class="form-grid">
+                <div class="field">
+                    <label for="vFecha">Fecha <span class="req" aria-hidden="true">*</span></label>
+                    <input id="vFecha" name="fecha" type="date" class="ctl" required />
+                    <span class="field-error" data-error-de="fecha"></span>
+                </div>
+                <div class="field">
+                    <label for="vCanal">Canal <span class="req" aria-hidden="true">*</span></label>
+                    <select id="vCanal" name="canal" class="ctl" data-tipo="numero" required>
+                        <option value="">Seleccione…</option>
+                        <option value="1">Mayorista</option>
+                        <option value="2">Canal tradicional (bodegas)</option>
+                        <option value="3">Canal moderno (supermercados)</option>
+                        <option value="4">Distribuidor</option>
+                        <option value="5">Otro</option>
+                    </select>
+                    <span class="field-error" data-error-de="canal"></span>
+                </div>
+                <div class="field field-full">
+                    <label for="vProducto">Producto <span class="req" aria-hidden="true">*</span></label>
+                    <select id="vProducto" name="productoId" class="ctl" data-tipo="numero" required></select>
+                    <span class="field-error" data-error-de="productoId"></span>
+                </div>
+                <div class="field">
+                    <label for="vCantidad">Cantidad <span class="req" aria-hidden="true">*</span></label>
+                    <input id="vCantidad" name="cantidad" type="number" class="ctl num" min="0" step="any" inputmode="decimal" data-tipo="numero" required />
+                    <span class="field-error" data-error-de="cantidad"></span>
+                </div>
+                <fieldset class="field">
+                    <legend>Expresada en</legend>
+                    <div class="radio-seg">
+                        <label><input type="radio" name="unidad" value="paquetes" checked /><span>Paquetes</span></label>
+                        <label><input type="radio" name="unidad" value="botellas" /><span>Botellas</span></label>
+                    </div>
+                </fieldset>
+                <p class="equivalencia field-full" id="equivalencia" hidden></p>
+                <div class="field field-full">
+                    <label for="vDocumento">Documento</label>
+                    <input id="vDocumento" name="documento" class="ctl" maxlength="60" placeholder="Ej.: guía de remisión 001-4567" />
+                    <span class="field-error" data-error-de="documento"></span>
+                </div>
+            </div>
+
+            <label class="switch" id="campoAfecta">
+                <input type="checkbox" name="afectaStock" id="vAfecta" />
+                <span class="switch-track" aria-hidden="true"></span>
+                <span class="switch-txt">Descontar del stock de producto terminado<small>Actívelo para un despacho real de hoy. Déjelo apagado para registrar ventas pasadas como historial.</small></span>
+            </label>
+            <div class="form-grid" id="campoAlmacen" hidden>
+                <div class="field">
+                    <label for="vAlmacen">Almacén de producto terminado <span class="req" aria-hidden="true">*</span></label>
+                    <select id="vAlmacen" name="almacenId" class="ctl" data-tipo="numero" data-opcional></select>
+                    <span class="field-error" data-error-de="almacenId"></span>
+                </div>
+                <p class="previsto" id="previsto" aria-live="polite" hidden></p>
+            </div>
+        </div>
+        <footer class="dlg-ft">
+            <button type="button" class="btn btn-secondary" data-cerrar>Cancelar</button>
+            <button type="submit" class="btn btn-primary"><svg class="ic"><use href="#i-guardar" /></svg>Registrar</button>
+        </footer>
+    </form>
+</dialog>
+
+<dialog class="dlg dlg-sm" id="dlgAnular" aria-labelledby="dlgAnularTitulo">
+    <form novalidate>
+        <header class="dlg-hd">
+            <h2 id="dlgAnularTitulo">Anular venta</h2>
+            <button type="button" class="dlg-x" data-cerrar aria-label="Cerrar"><svg class="ic"><use href="#i-cerrar" /></svg></button>
+        </header>
+        <div class="dlg-bd">
+            <p class="dlg-msg" data-resumen></p>
+            <p class="form-alert" data-error-general hidden role="alert"></p>
+            <div class="field">
+                <label for="aMotivo">Motivo de la anulación <span class="req" aria-hidden="true">*</span></label>
+                <input id="aMotivo" name="motivo" class="ctl" maxlength="200" required placeholder="Ej.: cantidad mal digitada" />
+                <span class="field-error" data-error-de="motivo"></span>
+            </div>
+        </div>
+        <footer class="dlg-ft">
+            <button type="button" class="btn btn-secondary" data-cerrar>Cancelar</button>
+            <button type="submit" class="btn btn-danger"><svg class="ic"><use href="#i-deshacer" /></svg>Anular venta</button>
+        </footer>
+    </form>
+</dialog>
+
+@section Scripts {
+    <script src="~/js/venta.js" asp-append-version="true"></script>
+}

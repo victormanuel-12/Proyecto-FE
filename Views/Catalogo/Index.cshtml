@@ -1,0 +1,126 @@
+@{
+    ViewData["Title"] = "Categorías y unidades";
+    ViewData["Seccion"] = "catalogos";
+    var puedeCatalogo = Roles.PuedeCatalogo(User);
+}
+<div class="page-head">
+    <div>
+        <p class="crumb">Almacenar</p>
+        <h1>Categorías y unidades</h1>
+        <p class="page-sub">Se crearon valores sugeridos para una embotelladora. Ajústelos a su empresa: lo que ya tiene insumos solo se puede desactivar.</p>
+    </div>
+</div>
+
+<div class="dos-col" id="paginaCatalogo" data-puede-catalogo="@(puedeCatalogo ? "true" : "false")">
+    <section class="bloque" aria-labelledby="tCategorias">
+        <header class="bloque-hd">
+            <div>
+                <h2 id="tCategorias">Categorías de insumos</h2>
+                <p>Agrupan los insumos en filtros y reportes.</p>
+            </div>
+            @if (puedeCatalogo)
+            {
+                <button type="button" class="btn btn-secondary btn-sm" id="btnNuevaCategoria"><svg class="ic"><use href="#i-mas" /></svg>Nueva</button>
+            }
+        </header>
+        <div class="tbl">
+            <table class="dt" id="tablaCategorias">
+                <thead>
+                    <tr>
+                        <th scope="col">Categoría</th>
+                        <th scope="col" class="num">Insumos</th>
+                        <th scope="col">Estado</th>
+                        <th scope="col" class="col-acciones"><span class="sr-only">Acciones</span></th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <div class="tbl-foot" id="pieCategorias"></div>
+        </div>
+    </section>
+
+    <section class="bloque" aria-labelledby="tUnidades">
+        <header class="bloque-hd">
+            <div>
+                <h2 id="tUnidades">Unidades de medida</h2>
+                <p>Para comprar (caja, rollo) y para consumir (unidad, kg).</p>
+            </div>
+            @if (puedeCatalogo)
+            {
+                <button type="button" class="btn btn-secondary btn-sm" id="btnNuevaUnidad"><svg class="ic"><use href="#i-mas" /></svg>Nueva</button>
+            }
+        </header>
+        <div class="tbl">
+            <table class="dt" id="tablaUnidades">
+                <thead>
+                    <tr>
+                        <th scope="col">Código</th>
+                        <th scope="col">Unidad</th>
+                        <th scope="col" class="num">Insumos</th>
+                        <th scope="col">Estado</th>
+                        <th scope="col" class="col-acciones"><span class="sr-only">Acciones</span></th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <div class="tbl-foot" id="pieUnidades"></div>
+        </div>
+    </section>
+</div>
+
+<dialog class="dlg dlg-sm" id="dlgCategoria" aria-labelledby="dlgCategoriaTitulo">
+    <form novalidate>
+        <header class="dlg-hd">
+            <h2 id="dlgCategoriaTitulo" data-titulo>Nueva categoría</h2>
+            <button type="button" class="dlg-x" data-cerrar aria-label="Cerrar"><svg class="ic"><use href="#i-cerrar" /></svg></button>
+        </header>
+        <div class="dlg-bd">
+            <p class="form-alert" data-error-general hidden role="alert"></p>
+            <div class="field">
+                <label for="kNombre">Nombre <span class="req" aria-hidden="true">*</span></label>
+                <input id="kNombre" name="nombre" class="ctl" maxlength="60" required />
+                <span class="field-error" data-error-de="nombre"></span>
+            </div>
+            <div class="field">
+                <label for="kDescripcion">Descripción</label>
+                <input id="kDescripcion" name="descripcion" class="ctl" maxlength="200" />
+                <span class="field-error" data-error-de="descripcion"></span>
+            </div>
+        </div>
+        <footer class="dlg-ft">
+            <button type="button" class="btn btn-secondary" data-cerrar>Cancelar</button>
+            <button type="submit" class="btn btn-primary"><svg class="ic"><use href="#i-guardar" /></svg>Guardar</button>
+        </footer>
+    </form>
+</dialog>
+
+<dialog class="dlg dlg-sm" id="dlgUnidad" aria-labelledby="dlgUnidadTitulo">
+    <form novalidate>
+        <header class="dlg-hd">
+            <h2 id="dlgUnidadTitulo" data-titulo>Nueva unidad</h2>
+            <button type="button" class="dlg-x" data-cerrar aria-label="Cerrar"><svg class="ic"><use href="#i-cerrar" /></svg></button>
+        </header>
+        <div class="dlg-bd">
+            <p class="form-alert" data-error-general hidden role="alert"></p>
+            <div class="field">
+                <label for="nCodigo">Código <span class="req" aria-hidden="true">*</span></label>
+                <input id="nCodigo" name="codigo" class="ctl mono" maxlength="10" required />
+                <small class="hint">Abreviatura que acompaña a las cantidades. Ej.: CJ, KG.</small>
+                <span class="field-error" data-error-de="codigo"></span>
+            </div>
+            <div class="field">
+                <label for="nNombre">Nombre <span class="req" aria-hidden="true">*</span></label>
+                <input id="nNombre" name="nombre" class="ctl" maxlength="40" required />
+                <span class="field-error" data-error-de="nombre"></span>
+            </div>
+        </div>
+        <footer class="dlg-ft">
+            <button type="button" class="btn btn-secondary" data-cerrar>Cancelar</button>
+            <button type="submit" class="btn btn-primary"><svg class="ic"><use href="#i-guardar" /></svg>Guardar</button>
+        </footer>
+    </form>
+</dialog>
+
+@section Scripts {
+    <script src="~/js/catalogo.js" asp-append-version="true"></script>
+}

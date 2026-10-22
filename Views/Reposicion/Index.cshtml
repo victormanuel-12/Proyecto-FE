@@ -1,0 +1,67 @@
+@{
+    ViewData["Title"] = "Reposición de insumos";
+    ViewData["Seccion"] = "reposicion";
+    var puedePedir = Roles.PuedeAbastecimiento(User);
+}
+<div class="page-head">
+    <div>
+        <p class="crumb">Planificar</p>
+        <h1>Reposición de insumos</h1>
+        <p class="page-sub">Qué insumo pedir, cuánto y hasta cuándo. Combina el pronóstico de ventas con las recetas, el stock de este momento, lo que está en camino y el tiempo de entrega de cada proveedor. Se recalcula con cada movimiento.</p>
+    </div>
+    <div class="page-actions">
+        <a class="btn btn-secondary" href="/pronostico"><svg class="ic"><use href="#i-tendencia" /></svg>Ver pronóstico</a>
+    </div>
+</div>
+
+<div class="seg-strip" id="segmentos" role="group" aria-label="Filtrar por situación">
+    <button type="button" class="seg" data-estado="pedir" aria-pressed="true"><span class="seg-dot warn"></span>Pedir ya <b data-resumen="pedir">–</b></button>
+    <button type="button" class="seg" data-estado="urgente" aria-pressed="false"><span class="seg-dot crit"></span>Urgentes <b data-resumen="urgentes">–</b></button>
+    <button type="button" class="seg" data-estado="ok" aria-pressed="false"><span class="seg-dot ok"></span>Cubiertos <b data-resumen="ok">–</b></button>
+    <button type="button" class="seg" data-estado="sin" aria-pressed="false">Sin datos <b data-resumen="sin">–</b></button>
+    <button type="button" class="seg" data-estado="" aria-pressed="false">Todos</button>
+</div>
+
+<form class="toolbar" id="filtros" role="search" autocomplete="off">
+    <label class="search">
+        <svg class="ic"><use href="#i-buscar" /></svg>
+        <span class="sr-only">Buscar insumos</span>
+        <input type="search" name="buscar" placeholder="Código o nombre del insumo" maxlength="100" />
+    </label>
+    <label class="select-lbl"><span>Categoría</span><select name="categoriaId" class="ctl ctl-sm" id="fCategoria"><option value="">Todas</option></select></label>
+</form>
+<p class="resumen-linea" id="base"></p>
+
+<div class="tbl">
+    <table class="dt" id="tabla" data-puede-pedir="@(puedePedir ? "true" : "false")">
+        <thead>
+            <tr>
+                <th scope="col">Insumo</th>
+                <th scope="col" class="num">Stock / en camino</th>
+                <th scope="col" class="num">Consumo diario</th>
+                <th scope="col">Cobertura</th>
+                <th scope="col" class="num">Punto de reorden</th>
+                <th scope="col" class="num">Pedir</th>
+                <th scope="col">Situación</th>
+                <th scope="col" class="col-acciones"><span class="sr-only">Acciones</span></th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+    <div class="tbl-foot" id="pie"></div>
+</div>
+
+<dialog class="dlg dlg-lg" id="dlgCalculo" aria-labelledby="dlgCalculoTitulo">
+    <form method="dialog">
+        <header class="dlg-hd">
+            <h2 id="dlgCalculoTitulo">Cálculo de reposición</h2>
+            <button type="button" class="dlg-x" data-cerrar aria-label="Cerrar"><svg class="ic"><use href="#i-cerrar" /></svg></button>
+        </header>
+        <div class="dlg-bd" id="calculoCuerpo"></div>
+        <footer class="dlg-ft"><button type="button" class="btn btn-secondary" data-cerrar>Cerrar</button></footer>
+    </form>
+</dialog>
+
+@section Scripts {
+    <script src="~/js/reposicion.js" asp-append-version="true"></script>
+}

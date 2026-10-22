@@ -1,0 +1,76 @@
+@{
+    ViewData["Title"] = "Stock";
+    ViewData["Seccion"] = "stock";
+    var puedeAlmacen = Roles.PuedeAlmacen(User);
+}
+<div class="page-head">
+    <div>
+        <p class="crumb">Almacenar</p>
+        <h1>Stock de insumos</h1>
+        <p class="page-sub">Existencias actuales por insumo y almacén, comparadas con su stock mínimo y máximo. Se actualiza con cada movimiento.</p>
+    </div>
+    @if (puedeAlmacen)
+    {
+        <div class="page-actions">
+            <a class="btn btn-primary" href="/movimientos?nuevo=1"><svg class="ic"><use href="#i-mas" /></svg>Registrar movimiento</a>
+        </div>
+    }
+</div>
+
+<div class="seg-strip" id="segmentos" role="group" aria-label="Filtrar por situación">
+    <button type="button" class="seg" data-estado="" aria-pressed="true">Todos <b data-resumen="insumos">–</b></button>
+    <button type="button" class="seg" data-estado="sin" aria-pressed="false"><span class="seg-dot crit"></span>Sin stock <b data-resumen="sinStock">–</b></button>
+    <button type="button" class="seg" data-estado="bajo" aria-pressed="false"><span class="seg-dot warn"></span>Bajo el mínimo <b data-resumen="bajoMinimo">–</b></button>
+    <button type="button" class="seg" data-estado="sobre" aria-pressed="false"><span class="seg-dot info"></span>Sobre el máximo <b data-resumen="sobreMaximo">–</b></button>
+</div>
+
+<form class="toolbar" id="filtros" role="search" autocomplete="off">
+    <label class="search">
+        <svg class="ic"><use href="#i-buscar" /></svg>
+        <span class="sr-only">Buscar insumos</span>
+        <input type="search" name="buscar" placeholder="Código o nombre del insumo" maxlength="100" />
+    </label>
+    <label class="select-lbl">
+        <span>Almacén</span>
+        <select name="almacenId" class="ctl ctl-sm" id="fAlmacen"><option value="">Todos</option></select>
+    </label>
+    <label class="select-lbl">
+        <span>Categoría</span>
+        <select name="categoriaId" class="ctl ctl-sm" id="fCategoria"><option value="">Todas</option></select>
+    </label>
+    <label class="select-lbl">
+        <span>Críticos</span>
+        <select name="criticos" class="ctl ctl-sm">
+            <option value="">Todos</option>
+            <option value="true">Solo críticos</option>
+        </select>
+    </label>
+</form>
+
+<div class="tbl">
+    <table class="dt" id="tabla" data-puede-almacen="@(puedeAlmacen ? "true" : "false")">
+        <thead>
+            <tr>
+                <th scope="col">Código</th>
+                <th scope="col">Insumo</th>
+                <th scope="col" class="num">Stock</th>
+                <th scope="col">Por almacén</th>
+                <th scope="col" class="num">En camino</th>
+                <th scope="col">Nivel (mín. – máx.)</th>
+                <th scope="col">Situación</th>
+                <th scope="col">Último movimiento</th>
+                <th scope="col" class="col-acciones"><span class="sr-only">Acciones</span></th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+    <div class="tbl-foot" id="pie"></div>
+</div>
+<aside class="nota">
+    <svg class="ic"><use href="#i-alerta" /></svg>
+    <p>Lo pedido que aún no llega se sumará en la Entrega 7 (pedidos en camino), y los días de cobertura y la fecha de quiebre, en la Entrega 8.</p>
+</aside>
+
+@section Scripts {
+    <script src="~/js/stock.js" asp-append-version="true"></script>
+}

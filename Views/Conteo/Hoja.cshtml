@@ -1,0 +1,74 @@
+@model SPIn.Dtos.Response.ConteoDetalleCompletoResponse
+@{
+    Layout = null;
+    var empresa = User.FindFirst(ClaimsSpin.EmpresaNombre)?.Value ?? string.Empty;
+    var c = System.Globalization.CultureInfo.GetCultureInfo("es-PE");
+}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Hoja de conteo N° @Model.Numero · SPIn</title>
+    <link rel="stylesheet" href="~/css/hoja.css" asp-append-version="true" />
+</head>
+<body>
+    <div class="barra no-imprimir">
+        <span>Vista de impresión. Use papel A4.</span>
+        <button type="button" id="btnImprimir">Imprimir</button>
+    </div>
+    <header>
+        <div>
+            <p class="empresa">@empresa</p>
+            <h1>Hoja de conteo físico N° @Model.Numero</h1>
+        </div>
+        <dl>
+            <dt>Almacén</dt><dd>@Model.AlmacenCodigo · @Model.AlmacenNombre</dd>
+            <dt>Alcance</dt><dd>@(Model.CategoriaNombre ?? "Todos los insumos")</dd>
+            <dt>Creado</dt><dd>@Model.CreadoEn.ToString("dd/MM/yyyy HH:mm") · @Model.CreadoPor</dd>
+            <dt>Estado</dt><dd>@Model.EstadoNombre</dd>
+        </dl>
+    </header>
+    @if (!string.IsNullOrEmpty(Model.Observacion))
+    {
+        <p class="obs">@Model.Observacion</p>
+    }
+    <p class="instr">Cuente cada insumo y anote la cantidad en su <b>unidad de consumo</b>. Si no hay existencias, escriba 0. No deje filas en blanco.</p>
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Código</th>
+                <th>Insumo</th>
+                <th>Categoría</th>
+                <th>Unidad</th>
+                <th class="contado">Cantidad contada</th>
+                <th class="obs-col">Observación</th>
+            </tr>
+        </thead>
+        <tbody>
+            @{ var n = 0; }
+            @foreach (var d in Model.Detalles)
+            {
+                n++;
+                <tr>
+                    <td>@n</td>
+                    <td class="mono">@d.InsumoCodigo</td>
+                    <td>@d.InsumoNombre</td>
+                    <td>@d.CategoriaNombre</td>
+                    <td class="mono">@d.UnidadConsumoCodigo</td>
+                    <td class="contado">@(d.CantidadContada?.ToString("#,0.####", c))</td>
+                    <td></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <p class="nota">El stock del sistema no se imprime a propósito: así el conteo no se ve influido.</p>
+    <footer>
+        <div><span></span>Contado por (nombre y firma)</div>
+        <div><span></span>Revisado por (nombre y firma)</div>
+        <div><span></span>Fecha y hora de término</div>
+    </footer>
+    <script src="~/js/hoja.js" asp-append-version="true"></script>
+</body>
+</html>

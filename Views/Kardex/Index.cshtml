@@ -1,0 +1,56 @@
+@{
+    ViewData["Title"] = "Kardex";
+    ViewData["Seccion"] = "kardex";
+    var empresa = User.FindFirst(ClaimsSpin.EmpresaNombre)?.Value ?? string.Empty;
+}
+<div class="page-head">
+    <div>
+        <p class="crumb">Almacenar</p>
+        <h1>Kardex de insumos</h1>
+        <p class="page-sub">Historial de entradas y salidas de un insumo con su saldo, movimiento por movimiento, en unidad de consumo.</p>
+    </div>
+    <div class="page-actions">
+        <button type="button" class="btn btn-secondary" id="btnExportar" disabled><svg class="ic"><use href="#i-descargar" /></svg>Exportar a Excel</button>
+        <button type="button" class="btn btn-secondary" id="btnImprimir" disabled><svg class="ic"><use href="#i-imprimir" /></svg>Imprimir</button>
+    </div>
+</div>
+
+<form class="filtros-panel" id="filtros" autocomplete="off" novalidate>
+    <div class="field">
+        <label for="kInsumo">Insumo <span class="req" aria-hidden="true">*</span></label>
+        <select id="kInsumo" name="insumoId" class="ctl" required><option value="">Cargando…</option></select>
+    </div>
+    <div class="field">
+        <label for="kAlmacen">Almacén</label>
+        <select id="kAlmacen" name="almacenId" class="ctl"><option value="">Todos los almacenes</option></select>
+    </div>
+    <div class="field">
+        <label for="kDesde">Desde</label>
+        <input id="kDesde" name="desde" type="date" class="ctl" />
+    </div>
+    <div class="field">
+        <label for="kHasta">Hasta</label>
+        <input id="kHasta" name="hasta" type="date" class="ctl" />
+    </div>
+    <div class="acciones-filtro">
+        <button type="submit" class="btn btn-primary"><svg class="ic"><use href="#i-buscar" /></svg>Consultar</button>
+    </div>
+    <div class="presets" role="group" aria-label="Periodos rápidos">
+        <span>Periodo:</span>
+        <button type="button" class="preset" data-preset="mes">Este mes</button>
+        <button type="button" class="preset" data-preset="mes-anterior">Mes anterior</button>
+        <button type="button" class="preset" data-preset="90">Últimos 90 días</button>
+        <button type="button" class="preset" data-preset="anio">Este año</button>
+    </div>
+</form>
+
+<section class="reporte" id="reporte" aria-live="polite" data-empresa="@empresa">
+    <div class="kardex-vacio">
+        <svg class="ic" style="width:28px;height:28px;color:var(--ink-3)"><use href="#i-libro" /></svg>
+        <p>Elija un insumo y presione <b>Consultar</b> para ver su kardex.</p>
+    </div>
+</section>
+
+@section Scripts {
+    <script src="~/js/kardex.js" asp-append-version="true"></script>
+}

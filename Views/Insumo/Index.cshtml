@@ -1,0 +1,302 @@
+@{
+    ViewData["Title"] = "Insumos";
+    ViewData["Seccion"] = "insumos";
+    var puedeCatalogo = Roles.PuedeCatalogo(User);
+    var puedeAbastecer = Roles.PuedeAbastecimiento(User);
+}
+<div class="page-head">
+    <div>
+        <p class="crumb">Almacenar</p>
+        <h1>Insumos</h1>
+        <p class="page-sub">Preformas, tapas, etiquetas, CO₂ y demás insumos de producción, con su política de stock y sus proveedores.</p>
+    </div>
+    @if (puedeCatalogo)
+    {
+        <div class="page-actions">
+            <button type="button" class="btn btn-primary" id="btnNuevo">
+                <svg class="ic"><use href="#i-mas" /></svg>Nuevo insumo
+            </button>
+        </div>
+    }
+</div>
+
+<div class="seg-strip" id="segmentos" role="group" aria-label="Filtrar por estado">
+    <button type="button" class="seg" data-estado="activos" aria-pressed="true">Activos <b data-conteo="activos">–</b></button>
+    <button type="button" class="seg" data-estado="inactivos" aria-pressed="false">Inactivos <b data-conteo="inactivos">–</b></button>
+    <button type="button" class="seg" data-estado="" aria-pressed="false">Todos <b data-conteo="todos">–</b></button>
+</div>
+
+<form class="toolbar" id="filtros" role="search" autocomplete="off">
+    <label class="search">
+        <svg class="ic"><use href="#i-buscar" /></svg>
+        <span class="sr-only">Buscar insumos</span>
+        <input type="search" name="buscar" placeholder="Código o nombre del insumo" maxlength="100" />
+    </label>
+    <label class="select-lbl">
+        <span>Categoría</span>
+        <select name="categoriaId" class="ctl ctl-sm" id="fCategoria"><option value="">Todas</option></select>
+    </label>
+    <label class="select-lbl">
+        <span>Críticos</span>
+        <select name="criticos" class="ctl ctl-sm">
+            <option value="">Todos</option>
+            <option value="true">Solo críticos</option>
+        </select>
+    </label>
+    <label class="select-lbl">
+        <span>Origen</span>
+        <select name="importados" class="ctl ctl-sm">
+            <option value="">Todos</option>
+            <option value="true">Importados</option>
+            <option value="false">Nacionales</option>
+        </select>
+    </label>
+</form>
+
+<div class="tbl">
+    <table class="dt" id="tabla"
+           data-puede-catalogo="@(puedeCatalogo ? "true" : "false")"
+           data-puede-abastecer="@(puedeAbastecer ? "true" : "false")">
+        <thead>
+            <tr>
+                <th scope="col">Código</th>
+                <th scope="col">Insumo</th>
+                <th scope="col">Unidades</th>
+                <th scope="col" class="num">Stock mín. – máx.</th>
+                <th scope="col">Proveedor principal</th>
+                <th scope="col">Estado</th>
+                <th scope="col" class="col-acciones"><span class="sr-only">Acciones</span></th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+    <div class="tbl-foot" id="pie"></div>
+</div>
+
+@* ------------------------------------------------------------ Panel de detalle *@
+<dialog class="drawer" id="drawer" aria-labelledby="drawerTitulo">
+    <header class="drawer-hd">
+        <div>
+            <span class="cel-codigo" data-codigo></span>
+            <h2 id="drawerTitulo" data-nombre>Insumo</h2>
+            <span class="estados" data-estados></span>
+        </div>
+        <button type="button" class="drawer-x" data-cerrar aria-label="Cerrar panel"><svg class="ic"><use href="#i-cerrar" /></svg></button>
+    </header>
+    <div class="drawer-bd" data-cuerpo></div>
+    @if (puedeCatalogo)
+    {
+        <footer class="drawer-ft">
+            <button type="button" class="btn btn-secondary" data-editar><svg class="ic"><use href="#i-editar" /></svg>Editar insumo</button>
+        </footer>
+    }
+</dialog>
+
+@* ------------------------------------------------------------ Formulario de insumo *@
+<dialog class="dlg dlg-lg" id="dlgInsumo" aria-labelledby="dlgInsumoTitulo">
+    <form novalidate>
+        <header class="dlg-hd">
+            <h2 id="dlgInsumoTitulo" data-titulo>Registrar insumo</h2>
+            <button type="button" class="dlg-x" data-cerrar aria-label="Cerrar"><svg class="ic"><use href="#i-cerrar" /></svg></button>
+        </header>
+        <div class="dlg-bd">
+            <p class="form-alert" data-error-general hidden role="alert"></p>
+
+            <fieldset class="form-section">
+                <legend class="form-section-title">Identificación</legend>
+                <div class="form-grid">
+                    <div class="field">
+                        <label for="iCodigo">Código <span class="req" aria-hidden="true">*</span></label>
+                        <input id="iCodigo" name="codigo" class="ctl mono" maxlength="20" required />
+                        <small class="hint">Ej.: PRF-500-CR. Letras, números y guiones.</small>
+                        <span class="field-error" data-error-de="codigo"></span>
+                    </div>
+                    <div class="field">
+                        <label for="iCategoria">Categoría <span class="req" aria-hidden="true">*</span></label>
+                        <select id="iCategoria" name="categoriaId" class="ctl" data-tipo="numero" required></select>
+                        <span class="field-error" data-error-de="categoriaId"></span>
+                    </div>
+                    <div class="field field-full">
+                        <label for="iNombre">Nombre <span class="req" aria-hidden="true">*</span></label>
+                        <input id="iNombre" name="nombre" class="ctl" maxlength="120" required placeholder="Ej.: Preforma 500 ml cristal 18.5 g" />
+                        <span class="field-error" data-error-de="nombre"></span>
+                    </div>
+                    <div class="field field-full">
+                        <label for="iTipoConsumo">¿Cómo se consume? <span class="req" aria-hidden="true">*</span></label>
+                        <select id="iTipoConsumo" name="tipoConsumo" class="ctl" data-tipo="numero" required>
+                            <option value="1">Por producción (según la receta de cada producto: botella, paquete o pallet)</option>
+                            <option value="2">Por horas de operación de la línea (lubricante, soda cáustica)</option>
+                            <option value="3">Manual (se registra cada salida)</option>
+                        </select>
+                        <span class="field-error" data-error-de="tipoConsumo"></span>
+                    </div>
+                </div>
+            </fieldset>
+
+            <fieldset class="form-section">
+                <legend class="form-section-title">Unidades <small>cómo se compra y cómo se consume</small></legend>
+                <div class="form-grid form-grid-3">
+                    <div class="field">
+                        <label for="iUCompra">Unidad de compra <span class="req" aria-hidden="true">*</span></label>
+                        <select id="iUCompra" name="unidadCompraId" class="ctl" data-tipo="numero" required></select>
+                        <span class="field-error" data-error-de="unidadCompraId"></span>
+                    </div>
+                    <div class="field">
+                        <label for="iUConsumo">Unidad de consumo <span class="req" aria-hidden="true">*</span></label>
+                        <select id="iUConsumo" name="unidadConsumoId" class="ctl" data-tipo="numero" required></select>
+                        <span class="field-error" data-error-de="unidadConsumoId"></span>
+                    </div>
+                    <div class="field">
+                        <label for="iFactor">Factor de conversión <span class="req" aria-hidden="true">*</span></label>
+                        <input id="iFactor" name="factorConversion" type="number" class="ctl num" min="0.0001" step="any" inputmode="decimal" data-tipo="numero" required />
+                        <span class="field-error" data-error-de="factorConversion"></span>
+                    </div>
+                    <p class="equivalencia" id="equivalencia" aria-live="polite"></p>
+                </div>
+            </fieldset>
+
+            <fieldset class="form-section">
+                <legend class="form-section-title">Política de stock <small>en unidad de consumo</small></legend>
+                <div class="form-grid form-grid-3">
+                    <div class="field">
+                        <label for="iMin">Stock mínimo <span class="req" aria-hidden="true">*</span></label>
+                        <input id="iMin" name="stockMinimo" type="number" class="ctl num" min="0" step="any" inputmode="decimal" data-tipo="numero" required />
+                        <span class="field-error" data-error-de="stockMinimo"></span>
+                    </div>
+                    <div class="field">
+                        <label for="iMax">Stock máximo <span class="req" aria-hidden="true">*</span></label>
+                        <input id="iMax" name="stockMaximo" type="number" class="ctl num" min="0" step="any" inputmode="decimal" data-tipo="numero" required />
+                        <span class="field-error" data-error-de="stockMaximo"></span>
+                    </div>
+                    <div class="field">
+                        <label for="iCapacidad">Capacidad de almacén</label>
+                        <input id="iCapacidad" name="capacidadMaxima" type="number" class="ctl num" min="0" step="any" inputmode="decimal" data-tipo="numero" data-opcional />
+                        <small class="hint">Ej.: tamaño del tanque de CO₂. Opcional.</small>
+                        <span class="field-error" data-error-de="capacidadMaxima"></span>
+                    </div>
+                    <div class="field">
+                        <label for="iNivel">Nivel de servicio <span class="req" aria-hidden="true">*</span></label>
+                        <div class="ctl-unidad">
+                            <input id="iNivel" name="nivelServicio" type="number" class="ctl num" min="50" max="99.9" step="0.1" inputmode="decimal" data-tipo="numero" required />
+                            <span>%</span>
+                        </div>
+                        <small class="hint">Más alto = más stock de seguridad. 98 % para insumos críticos.</small>
+                        <span class="field-error" data-error-de="nivelServicio"></span>
+                    </div>
+                    <div class="field">
+                        <label for="iConsumo">Consumo estimado por día</label>
+                        <input id="iConsumo" name="consumoEstimadoDiario" type="number" class="ctl num" min="0" step="any" inputmode="decimal" data-tipo="numero" data-opcional />
+                        <small class="hint">Se usa mientras no haya historial de consumo.</small>
+                        <span class="field-error" data-error-de="consumoEstimadoDiario"></span>
+                    </div>
+                </div>
+            </fieldset>
+
+            <fieldset class="form-section">
+                <legend class="form-section-title">Características</legend>
+                <div class="switches">
+                    <label class="switch">
+                        <input type="checkbox" name="esCritico" />
+                        <span class="switch-track" aria-hidden="true"></span>
+                        <span class="switch-txt">Crítico para la línea<small>Si falta, la línea se detiene. Sale primero en las alertas.</small></span>
+                    </label>
+                    <label class="switch">
+                        <input type="checkbox" name="esImportado" />
+                        <span class="switch-track" aria-hidden="true"></span>
+                        <span class="switch-txt">Importado<small>Tiempos de entrega largos y variables.</small></span>
+                    </label>
+                    <label class="switch">
+                        <input type="checkbox" name="controlaLote" />
+                        <span class="switch-track" aria-hidden="true"></span>
+                        <span class="switch-txt">Controla lote y vencimiento<small>Concentrado, adhesivos. Se usará en la fase 2.</small></span>
+                    </label>
+                </div>
+            </fieldset>
+        </div>
+        <footer class="dlg-ft">
+            <button type="button" class="btn btn-secondary" data-cerrar>Cancelar</button>
+            <button type="submit" class="btn btn-primary"><svg class="ic"><use href="#i-guardar" /></svg>Guardar</button>
+        </footer>
+    </form>
+</dialog>
+
+@* ------------------------------------------------------------ Condición de compra *@
+<dialog class="dlg" id="dlgCondicion" aria-labelledby="dlgCondicionTitulo">
+    <form novalidate>
+        <header class="dlg-hd">
+            <h2 id="dlgCondicionTitulo" data-titulo>Agregar proveedor</h2>
+            <button type="button" class="dlg-x" data-cerrar aria-label="Cerrar"><svg class="ic"><use href="#i-cerrar" /></svg></button>
+        </header>
+        <div class="dlg-bd">
+            <p class="dlg-msg">Condiciones de compra de <b data-insumo></b>. Las cantidades van en <b data-unidad-compra></b> (unidad de compra).</p>
+            <p class="form-alert" data-error-general hidden role="alert"></p>
+            <div class="form-grid">
+                <div class="field field-full">
+                    <label for="cProveedor">Proveedor <span class="req" aria-hidden="true">*</span></label>
+                    <select id="cProveedor" name="proveedorId" class="ctl" data-tipo="numero" required></select>
+                    <span class="field-error" data-error-de="proveedorId"></span>
+                </div>
+                <fieldset class="field">
+                    <legend>Moneda <span class="req" aria-hidden="true">*</span></legend>
+                    <div class="radio-seg">
+                        <label><input type="radio" name="moneda" value="1" data-tipo="numero" /><span>Soles (S/)</span></label>
+                        <label><input type="radio" name="moneda" value="2" data-tipo="numero" /><span>Dólares (US$)</span></label>
+                    </div>
+                    <span class="field-error" data-error-de="moneda"></span>
+                </fieldset>
+                <div class="field">
+                    <label for="cPrecio">Precio por <span data-unidad-compra></span> <span class="req" aria-hidden="true">*</span></label>
+                    <input id="cPrecio" name="precioUnitario" type="number" class="ctl num" min="0" step="any" inputmode="decimal" data-tipo="numero" required />
+                    <span class="field-error" data-error-de="precioUnitario"></span>
+                </div>
+                <div class="field">
+                    <label for="cEntrega">Tiempo de entrega <span class="req" aria-hidden="true">*</span></label>
+                    <div class="ctl-unidad">
+                        <input id="cEntrega" name="tiempoEntregaDias" type="number" class="ctl num" min="1" max="365" step="1" inputmode="numeric" data-tipo="numero" required />
+                        <span>días</span>
+                    </div>
+                    <span class="field-error" data-error-de="tiempoEntregaDias"></span>
+                </div>
+                <div class="field">
+                    <label for="cVariacion">Variación habitual (±)</label>
+                    <div class="ctl-unidad">
+                        <input id="cVariacion" name="variacionEntregaDias" type="number" class="ctl num" min="0" max="365" step="1" inputmode="numeric" data-tipo="numero" />
+                        <span>días</span>
+                    </div>
+                    <small class="hint">Cuánto suele adelantarse o atrasarse.</small>
+                    <span class="field-error" data-error-de="variacionEntregaDias"></span>
+                </div>
+                <div class="field">
+                    <label for="cMinimo">Pedido mínimo</label>
+                    <div class="ctl-unidad">
+                        <input id="cMinimo" name="pedidoMinimo" type="number" class="ctl num" min="0" step="any" inputmode="decimal" data-tipo="numero" />
+                        <span data-unidad-compra></span>
+                    </div>
+                    <span class="field-error" data-error-de="pedidoMinimo"></span>
+                </div>
+                <div class="field">
+                    <label for="cMultiplo">Se compra de a <span class="req" aria-hidden="true">*</span></label>
+                    <div class="ctl-unidad">
+                        <input id="cMultiplo" name="multiploCompra" type="number" class="ctl num" min="0.0001" step="any" inputmode="decimal" data-tipo="numero" required />
+                        <span data-unidad-compra></span>
+                    </div>
+                    <small class="hint">Múltiplo: el pedido sugerido se redondea a esta cantidad.</small>
+                    <span class="field-error" data-error-de="multiploCompra"></span>
+                </div>
+                <label class="switch field-full">
+                    <input type="checkbox" name="esPrincipal" />
+                    <span class="switch-track" aria-hidden="true"></span>
+                    <span class="switch-txt">Proveedor principal<small>Sus condiciones se usarán para calcular cuándo y cuánto pedir.</small></span>
+                </label>
+            </div>
+        </div>
+        <footer class="dlg-ft">
+            <button type="button" class="btn btn-secondary" data-cerrar>Cancelar</button>
+            <button type="submit" class="btn btn-primary"><svg class="ic"><use href="#i-guardar" /></svg>Guardar</button>
+        </footer>
+    </form>
+</dialog>
+
+@section Scripts {
+    <script src="~/js/insumo.js" asp-append-version="true"></script>
+}

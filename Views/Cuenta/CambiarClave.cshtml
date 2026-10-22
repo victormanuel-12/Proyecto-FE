@@ -1,0 +1,45 @@
+@model CambiarClaveViewModel
+@{
+    ViewData["Title"] = "Cambiar contraseña";
+}
+<div class="page-head">
+    <div>
+        <p class="crumb">Mi cuenta</p>
+        <h1>Cambiar contraseña</h1>
+        <p class="page-sub">Use al menos 8 caracteres, con mayúsculas, minúsculas y un número.</p>
+    </div>
+</div>
+
+<div class="panel panel-narrow">
+    @if (TempData["Mensaje"] is string mensaje)
+    {
+        <p class="form-ok" role="status"><svg class="ic"><use href="#i-ok" /></svg>@mensaje</p>
+    }
+    <form method="post" asp-action="CambiarClave" novalidate>
+        <div asp-validation-summary="ModelOnly" class="form-alert" role="alert"></div>
+        <div class="field">
+            <label asp-for="ClaveActual"></label>
+            <input asp-for="ClaveActual" class="ctl" autocomplete="current-password" />
+            <span asp-validation-for="ClaveActual" class="field-error"></span>
+        </div>
+        <div class="field">
+            <label asp-for="ClaveNueva"></label>
+            <input asp-for="ClaveNueva" class="ctl" autocomplete="new-password" />
+            <span asp-validation-for="ClaveNueva" class="field-error"></span>
+        </div>
+        <div class="field">
+            <label asp-for="ConfirmarClave"></label>
+            <input asp-for="ConfirmarClave" class="ctl" autocomplete="new-password" />
+            <span asp-validation-for="ConfirmarClave" class="field-error"></span>
+        </div>
+        <div class="form-actions">
+            <a class="btn btn-secondary" href="/">Cancelar</a>
+            <button type="submit" class="btn btn-primary" data-enviar-una-vez>
+                <svg class="ic"><use href="#i-guardar" /></svg>Guardar contraseña
+            </button>
+        </div>
+    </form>
+</div>
+@section Scripts {
+    <script src="~/js/cuenta.js" asp-append-version="true"></script>
+}

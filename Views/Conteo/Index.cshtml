@@ -1,0 +1,95 @@
+@{
+    ViewData["Title"] = "Conteo físico";
+    ViewData["Seccion"] = "conteos";
+    var puedeAlmacen = Roles.PuedeAlmacen(User);
+}
+<div class="page-head">
+    <div>
+        <p class="crumb">Almacenar</p>
+        <h1>Conteo físico</h1>
+        <p class="page-sub">Compare el stock del sistema con lo que hay realmente en el almacén. Al aprobar, SPIn registra los ajustes en el kardex.</p>
+    </div>
+    @if (puedeAlmacen)
+    {
+        <div class="page-actions">
+            <button type="button" class="btn btn-primary" id="btnNuevo"><svg class="ic"><use href="#i-mas" /></svg>Nuevo conteo</button>
+        </div>
+    }
+</div>
+
+<div class="seg-strip" id="segmentos" role="group" aria-label="Filtrar por estado">
+    <button type="button" class="seg" data-estado="" aria-pressed="true">Todos</button>
+    <button type="button" class="seg" data-estado="1" aria-pressed="false">Abiertos</button>
+    <button type="button" class="seg" data-estado="2" aria-pressed="false">Aprobados</button>
+    <button type="button" class="seg" data-estado="3" aria-pressed="false">Anulados</button>
+</div>
+
+<form class="toolbar" id="filtros" autocomplete="off">
+    <label class="select-lbl">
+        <span>Almacén</span>
+        <select name="almacenId" class="ctl ctl-sm" id="fAlmacen"><option value="">Todos</option></select>
+    </label>
+</form>
+
+<div class="tbl">
+    <table class="dt" id="tabla">
+        <thead>
+            <tr>
+                <th scope="col">N°</th>
+                <th scope="col">Almacén</th>
+                <th scope="col">Alcance</th>
+                <th scope="col">Avance</th>
+                <th scope="col" class="num">Con diferencia</th>
+                <th scope="col">Estado</th>
+                <th scope="col">Creado</th>
+                <th scope="col" class="col-acciones"><span class="sr-only">Acciones</span></th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+    <div class="tbl-foot" id="pie"></div>
+</div>
+
+<dialog class="dlg" id="dlgConteo" aria-labelledby="dlgConteoTitulo">
+    <form novalidate>
+        <header class="dlg-hd">
+            <h2 id="dlgConteoTitulo">Nuevo conteo físico</h2>
+            <button type="button" class="dlg-x" data-cerrar aria-label="Cerrar"><svg class="ic"><use href="#i-cerrar" /></svg></button>
+        </header>
+        <div class="dlg-bd">
+            <p class="dlg-msg">SPIn guardará el stock actual del sistema de cada insumo como referencia. Luego registre lo contado.</p>
+            <p class="form-alert" data-error-general hidden role="alert"></p>
+            <div class="form-grid">
+                <div class="field">
+                    <label for="cAlmacen">Almacén <span class="req" aria-hidden="true">*</span></label>
+                    <select id="cAlmacen" name="almacenId" class="ctl" data-tipo="numero" required></select>
+                    <span class="field-error" data-error-de="almacenId"></span>
+                </div>
+                <div class="field">
+                    <label for="cCategoria">Categoría</label>
+                    <select id="cCategoria" name="categoriaId" class="ctl" data-tipo="numero" data-opcional></select>
+                    <small class="hint">Vacío: todos los insumos activos.</small>
+                    <span class="field-error" data-error-de="categoriaId"></span>
+                </div>
+                <label class="switch field-full">
+                    <input type="checkbox" name="soloConStock" />
+                    <span class="switch-track" aria-hidden="true"></span>
+                    <span class="switch-txt">Solo insumos con stock en el sistema<small>Desmárquelo para encontrar también lo que hay físicamente pero no está registrado.</small></span>
+                </label>
+                <div class="field field-full">
+                    <label for="cObs">Observación</label>
+                    <input id="cObs" name="observacion" class="ctl" maxlength="200" placeholder="Ej.: conteo mensual de cierre" />
+                    <span class="field-error" data-error-de="observacion"></span>
+                </div>
+            </div>
+        </div>
+        <footer class="dlg-ft">
+            <button type="button" class="btn btn-secondary" data-cerrar>Cancelar</button>
+            <button type="submit" class="btn btn-primary"><svg class="ic"><use href="#i-portapapeles" /></svg>Crear conteo</button>
+        </footer>
+    </form>
+</dialog>
+
+@section Scripts {
+    <script src="~/js/conteos.js" asp-append-version="true"></script>
+}

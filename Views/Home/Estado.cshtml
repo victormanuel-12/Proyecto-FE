@@ -1,0 +1,22 @@
+@{
+    var codigo = ViewData["Codigo"] as int? ?? 500;
+    var (titulo, texto) = codigo switch
+    {
+        404 => ("Página no encontrada", "La dirección no existe o fue movida."),
+        403 => ("Acceso denegado", "Su rol no permite usar esta página."),
+        401 => ("Sesión requerida", "Inicie sesión para continuar."),
+        _ => ("Ocurrió un error", "No pudimos completar la solicitud. Intente nuevamente en unos minutos.")
+    };
+    ViewData["Title"] = titulo;
+    Layout = User.Identity?.IsAuthenticated == true ? "_Layout" : "_LayoutCuenta";
+}
+<section class="estado-pagina">
+    <p class="estado-codigo">@codigo</p>
+    <h1>@titulo</h1>
+    <p>@texto</p>
+    @if (ViewData["IdSolicitud"] is string id)
+    {
+        <p class="estado-ref">Referencia para soporte: <code>@id</code></p>
+    }
+    <a class="btn btn-secondary" href="/">Volver al inicio</a>
+</section>

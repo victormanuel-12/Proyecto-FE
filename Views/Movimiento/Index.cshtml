@@ -1,0 +1,159 @@
+@{
+    ViewData["Title"] = "Movimientos";
+    ViewData["Seccion"] = "movimientos";
+    var puedeAlmacen = Roles.PuedeAlmacen(User);
+}
+<div class="page-head">
+    <div>
+        <p class="crumb">Almacenar</p>
+        <h1>Movimientos de stock</h1>
+        <p class="page-sub">Entradas, salidas, ajustes y mermas. Los movimientos no se editan ni se borran: un error se corrige revirtiéndolo, y la reversión queda en el kardex.</p>
+    </div>
+    @if (puedeAlmacen)
+    {
+        <div class="page-actions">
+            <button type="button" class="btn btn-primary" id="btnNuevo"><svg class="ic"><use href="#i-mas" /></svg>Registrar movimiento</button>
+        </div>
+    }
+</div>
+
+<form class="toolbar" id="filtros" role="search" autocomplete="off">
+    <label class="search">
+        <svg class="ic"><use href="#i-buscar" /></svg>
+        <span class="sr-only">Buscar</span>
+        <input type="search" name="buscar" placeholder="Insumo o documento" maxlength="100" />
+    </label>
+    <label class="select-lbl">
+        <span>Tipo</span>
+        <select name="tipo" class="ctl ctl-sm">
+            <option value="">Todos</option>
+            <option value="1">Stock inicial</option>
+            <option value="2">Entrada por compra</option>
+            <option value="3">Salida a producción</option>
+            <option value="4">Salida por consumo</option>
+            <option value="5">Ajuste positivo</option>
+            <option value="6">Ajuste negativo</option>
+            <option value="7">Merma</option>
+        </select>
+    </label>
+    <label class="select-lbl">
+        <span>Almacén</span>
+        <select name="almacenId" class="ctl ctl-sm" id="fAlmacen"><option value="">Todos</option></select>
+    </label>
+    <label class="select-lbl"><span>Desde</span><input type="date" name="desde" class="ctl ctl-sm" /></label>
+    <label class="select-lbl"><span>Hasta</span><input type="date" name="hasta" class="ctl ctl-sm" /></label>
+</form>
+
+<div class="tbl">
+    <table class="dt" id="tabla" data-puede-almacen="@(puedeAlmacen ? "true" : "false")">
+        <thead>
+            <tr>
+                <th scope="col">N°</th>
+                <th scope="col">Fecha</th>
+                <th scope="col">Tipo</th>
+                <th scope="col">Insumo</th>
+                <th scope="col">Almacén</th>
+                <th scope="col" class="num">Cantidad</th>
+                <th scope="col" class="num">Saldo</th>
+                <th scope="col">Documento / motivo</th>
+                <th scope="col">Usuario</th>
+                <th scope="col" class="col-acciones"><span class="sr-only">Acciones</span></th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+    <div class="tbl-foot" id="pie"></div>
+</div>
+
+<dialog class="dlg dlg-lg" id="dlgMovimiento" aria-labelledby="dlgMovTitulo">
+    <form novalidate>
+        <header class="dlg-hd">
+            <h2 id="dlgMovTitulo">Registrar movimiento</h2>
+            <button type="button" class="dlg-x" data-cerrar aria-label="Cerrar"><svg class="ic"><use href="#i-cerrar" /></svg></button>
+        </header>
+        <div class="dlg-bd">
+            <p class="form-alert" data-error-general hidden role="alert"></p>
+            <fieldset class="form-section">
+                <legend class="form-section-title">Tipo de movimiento</legend>
+                <div class="tipos-mov" id="tiposMov">
+                    <label class="tipo-mov"><input type="radio" name="tipo" value="1" data-tipo="numero" /><span class="tipo-card"><b><i class="signo" aria-hidden="true">+</i> Stock inicial</b><small>Existencias al empezar a usar SPIn.</small></span></label>
+                    <label class="tipo-mov"><input type="radio" name="tipo" value="2" data-tipo="numero" /><span class="tipo-card"><b><i class="signo" aria-hidden="true">+</i> Entrada por compra</b><small>Llegó mercadería del proveedor.</small></span></label>
+                    <label class="tipo-mov"><input type="radio" name="tipo" value="5" data-tipo="numero" /><span class="tipo-card"><b><i class="signo" aria-hidden="true">+</i> Ajuste positivo</b><small>Corrección: hay más de lo registrado.</small></span></label>
+                    <label class="tipo-mov"><input type="radio" name="tipo" value="4" data-tipo="numero" /><span class="tipo-card"><b><i class="signo menos" aria-hidden="true">−</i> Salida por consumo</b><small>Uso que no viene de un parte de producción.</small></span></label>
+                    <label class="tipo-mov"><input type="radio" name="tipo" value="6" data-tipo="numero" /><span class="tipo-card"><b><i class="signo menos" aria-hidden="true">−</i> Ajuste negativo</b><small>Corrección: hay menos de lo registrado.</small></span></label>
+                    <label class="tipo-mov"><input type="radio" name="tipo" value="7" data-tipo="numero" /><span class="tipo-card"><b><i class="signo menos" aria-hidden="true">−</i> Merma</b><small>Producto dañado, vencido o perdido.</small></span></label>
+                </div>
+                <span class="field-error" data-error-de="tipo"></span>
+            </fieldset>
+
+            <fieldset class="form-section">
+                <legend class="form-section-title">Detalle</legend>
+                <div class="form-grid">
+                    <div class="field">
+                        <label for="mAlmacen">Almacén <span class="req" aria-hidden="true">*</span></label>
+                        <select id="mAlmacen" name="almacenId" class="ctl" data-tipo="numero" required></select>
+                        <span class="field-error" data-error-de="almacenId"></span>
+                    </div>
+                    <div class="field">
+                        <label for="mInsumo">Insumo <span class="req" aria-hidden="true">*</span></label>
+                        <select id="mInsumo" name="insumoId" class="ctl" data-tipo="numero" required></select>
+                        <span class="field-error" data-error-de="insumoId"></span>
+                    </div>
+                    <div class="field">
+                        <label for="mCantidad">Cantidad <span class="req" aria-hidden="true">*</span></label>
+                        <input id="mCantidad" name="cantidad" type="number" class="ctl num" min="0" step="any" inputmode="decimal" data-tipo="numero" required />
+                        <span class="field-error" data-error-de="cantidad"></span>
+                    </div>
+                    <fieldset class="field" id="campoUnidad">
+                        <legend>Cantidad expresada en</legend>
+                        <div class="radio-seg">
+                            <label><input type="radio" name="unidadIngreso" value="consumo" checked /><span data-u-consumo>Unidad de consumo</span></label>
+                            <label><input type="radio" name="unidadIngreso" value="compra" /><span data-u-compra>Unidad de compra</span></label>
+                        </div>
+                    </fieldset>
+                    <div class="field">
+                        <label for="mDocumento">Documento de respaldo</label>
+                        <input id="mDocumento" name="documento" class="ctl" maxlength="60" placeholder="Ej.: guía 001-12345" />
+                        <span class="field-error" data-error-de="documento"></span>
+                    </div>
+                    <div class="field">
+                        <label for="mMotivo">Motivo <span class="req" aria-hidden="true" id="motivoReq" hidden>*</span></label>
+                        <input id="mMotivo" name="motivo" class="ctl" maxlength="200" />
+                        <span class="field-error" data-error-de="motivo"></span>
+                    </div>
+                    <p class="previsto" id="previsto" aria-live="polite" hidden></p>
+                </div>
+            </fieldset>
+        </div>
+        <footer class="dlg-ft">
+            <button type="button" class="btn btn-secondary" data-cerrar>Cancelar</button>
+            <button type="submit" class="btn btn-primary"><svg class="ic"><use href="#i-guardar" /></svg>Registrar</button>
+        </footer>
+    </form>
+</dialog>
+
+<dialog class="dlg dlg-sm" id="dlgRevertir" aria-labelledby="dlgRevTitulo">
+    <form novalidate>
+        <header class="dlg-hd">
+            <h2 id="dlgRevTitulo">Revertir movimiento</h2>
+            <button type="button" class="dlg-x" data-cerrar aria-label="Cerrar"><svg class="ic"><use href="#i-cerrar" /></svg></button>
+        </header>
+        <div class="dlg-bd">
+            <p class="dlg-msg" data-resumen></p>
+            <p class="form-alert" data-error-general hidden role="alert"></p>
+            <div class="field">
+                <label for="rMotivo">Motivo de la reversión <span class="req" aria-hidden="true">*</span></label>
+                <input id="rMotivo" name="motivo" class="ctl" maxlength="200" required placeholder="Ej.: cantidad mal digitada" />
+                <span class="field-error" data-error-de="motivo"></span>
+            </div>
+        </div>
+        <footer class="dlg-ft">
+            <button type="button" class="btn btn-secondary" data-cerrar>Cancelar</button>
+            <button type="submit" class="btn btn-danger"><svg class="ic"><use href="#i-deshacer" /></svg>Revertir</button>
+        </footer>
+    </form>
+</dialog>
+
+@section Scripts {
+    <script src="~/js/movimiento.js" asp-append-version="true"></script>
+}

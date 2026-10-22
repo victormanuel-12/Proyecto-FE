@@ -1,0 +1,34 @@
+@model LoginViewModel
+@{
+    ViewData["Title"] = "Iniciar sesión";
+    Layout = "_LayoutCuenta";
+}
+<div class="auth-form">
+    <h1>Iniciar sesión</h1>
+    <p class="auth-sub">Ingrese con el correo que le asignó el administrador de su empresa.</p>
+
+    <form method="post" asp-action="Login" novalidate>
+        <input type="hidden" asp-for="ReturnUrl" />
+        <div asp-validation-summary="ModelOnly" class="form-alert" role="alert"></div>
+
+        <div class="field">
+            <label asp-for="Email"></label>
+            <input asp-for="Email" class="ctl" autocomplete="username" autofocus />
+            <span asp-validation-for="Email" class="field-error"></span>
+        </div>
+        <div class="field">
+            <label asp-for="Clave"></label>
+            <input asp-for="Clave" class="ctl" autocomplete="current-password" />
+            <span asp-validation-for="Clave" class="field-error"></span>
+        </div>
+        <label class="check">
+            <input asp-for="Recordarme" />
+            <span>Mantener la sesión iniciada en este equipo</span>
+        </label>
+        <button type="submit" class="btn btn-primary btn-block" data-enviar-una-vez>
+            Ingresar <svg class="ic"><use href="#i-flecha" /></svg>
+        </button>
+    </form>
+    <p class="auth-note">¿Olvidó su contraseña? Pida al administrador de su empresa que la restablezca.</p>
+</div>
+<script src="~/js/cuenta.js" asp-append-version="true"></script>

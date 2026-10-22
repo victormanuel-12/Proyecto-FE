@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>SPIn</RootNamespace>
+    <AssemblyName>SPIn</AssemblyName>
+    <InvariantGlobalization>false</InvariantGlobalization>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.13" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.13" />
+    <PackageReference Include="ClosedXML" Version="0.105.0" />
+    <!-- Entrega 8: motor predictivo (gratuito, MIT, se ejecuta dentro de la aplicación). -->
+    <PackageReference Include="Microsoft.ML" Version="5.0.0" />
+    <PackageReference Include="Microsoft.ML.TimeSeries" Version="5.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.13">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <!-- La base de datos y las claves locales no forman parte del proyecto -->
+  <ItemGroup>
+    <Content Remove="datos\**" />
+    <None Remove="datos\**" />
+    <Compile Remove="datos\**" />
+  </ItemGroup>
+
+  <!-- Entrega 10: el proyecto de pruebas vive en pruebas/ y no se compila dentro de la aplicación. -->
+  <ItemGroup>
+    <Compile Remove="pruebas/**" />
+    <Content Remove="pruebas/**" />
+    <None Remove="pruebas/**" />
+    <EmbeddedResource Remove="pruebas/**" />
+    <InternalsVisibleTo Include="SPIn.Pruebas" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,20 @@
+services:
+  spin:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: spin:entrega-01
+    container_name: spin
+    ports:
+      - "${SPIN_PUERTO:-8080}:8080"
+    environment:
+      Seed__Admin__Email: ${SPIN_ADMIN_EMAIL:?Defina SPIN_ADMIN_EMAIL en el archivo .env}
+      Seed__Admin__Clave: ${SPIN_ADMIN_CLAVE:?Defina SPIN_ADMIN_CLAVE en el archivo .env}
+      Seed__Admin__Nombre: ${SPIN_ADMIN_NOMBRE:-Administrador SPIn}
+      Demo__Cargar: ${SPIN_DEMO:-false}
+    volumes:
+      - spin-datos:/app/data
+    restart: unless-stopped
+
+volumes:
+  spin-datos:

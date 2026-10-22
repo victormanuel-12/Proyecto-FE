@@ -1,0 +1,240 @@
+@{
+    ViewData["Title"] = "Producción";
+    ViewData["Seccion"] = "produccion";
+    var puedePartes = Roles.PuedePartes(User);
+    var puedePlan = Roles.PuedeProduccion(User);
+}
+<div class="page-head">
+    <div>
+        <p class="crumb">Producir</p>
+        <h1>Producción</h1>
+        <p class="page-sub">Programe qué se embotella en cada línea y registre los partes de lo producido. Cada parte descuenta los insumos según la receta vigente (con merma) y suma los paquetes al producto terminado.</p>
+    </div>
+    <div class="page-actions">
+        @if (puedePlan)
+        {
+            <button type="button" class="btn btn-secondary" id="btnPlan"><svg class="ic"><use href="#i-calendario" /></svg>Programar producción</button>
+        }
+        @if (puedePartes)
+        {
+            <button type="button" class="btn btn-primary" id="btnParte"><svg class="ic"><use href="#i-mas" /></svg>Registrar parte</button>
+        }
+    </div>
+</div>
+
+<div class="seg-strip" id="pestanas" role="tablist" aria-label="Vista">
+    <button type="button" class="seg" role="tab" data-vista="partes" aria-pressed="true" aria-selected="true">Partes de producción</button>
+    <button type="button" class="seg" role="tab" data-vista="plan" aria-pressed="false" aria-selected="false">Programación <b id="pendientesPlan">–</b></button>
+</div>
+
+<section id="vistaPartes">
+    <form class="toolbar" id="filtrosPartes" role="search" autocomplete="off">
+        <label class="select-lbl"><span>Línea</span><select name="lineaId" class="ctl ctl-sm" data-lineas><option value="">Todas</option></select></label>
+        <label class="select-lbl"><span>Producto</span><select name="productoId" class="ctl ctl-sm" data-productos><option value="">Todos</option></select></label>
+        <label class="select-lbl"><span>Desde</span><input type="date" name="desde" class="ctl ctl-sm" /></label>
+        <label class="select-lbl"><span>Hasta</span><input type="date" name="hasta" class="ctl ctl-sm" /></label>
+        <label class="select-lbl"><span>Anulados</span><select name="anulados" class="ctl ctl-sm"><option value="">Ocultar</option><option value="true">Mostrar</option></select></label>
+    </form>
+    <div class="tbl">
+        <table class="dt" id="tablaPartes" data-puede-plan="@(puedePlan ? "true" : "false")">
+            <thead>
+                <tr>
+                    <th scope="col">N°</th>
+                    <th scope="col">Fecha</th>
+                    <th scope="col">Línea</th>
+                    <th scope="col">Producto</th>
+                    <th scope="col" class="num">Paquetes</th>
+                    <th scope="col">Eficiencia</th>
+                    <th scope="col">Almacenes</th>
+                    <th scope="col">Estado</th>
+                    <th scope="col" class="col-acciones"><span class="sr-only">Acciones</span></th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        <div class="tbl-foot" id="piePartes"></div>
+    </div>
+</section>
+
+<section id="vistaPlan" hidden>
+    <form class="toolbar" id="filtrosPlan" role="search" autocomplete="off">
+        <label class="select-lbl"><span>Estado</span>
+            <select name="estado" class="ctl ctl-sm"><option value="1">Pendientes</option><option value="2">Ejecutados</option><option value="3">Cancelados</option><option value="">Todos</option></select>
+        </label>
+        <label class="select-lbl"><span>Línea</span><select name="lineaId" class="ctl ctl-sm" data-lineas><option value="">Todas</option></select></label>
+        <label class="select-lbl"><span>Producto</span><select name="productoId" class="ctl ctl-sm" data-productos><option value="">Todos</option></select></label>
+        <label class="select-lbl"><span>Desde</span><input type="date" name="desde" class="ctl ctl-sm" /></label>
+        <label class="select-lbl"><span>Hasta</span><input type="date" name="hasta" class="ctl ctl-sm" /></label>
+    </form>
+    <div class="tbl">
+        <table class="dt" id="tablaPlan" data-puede-plan="@(puedePlan ? "true" : "false")" data-puede-partes="@(puedePartes ? "true" : "false")">
+            <thead>
+                <tr>
+                    <th scope="col">Fecha</th>
+                    <th scope="col">Línea</th>
+                    <th scope="col">Producto</th>
+                    <th scope="col" class="num">Paquetes</th>
+                    <th scope="col" class="num">Horas de línea</th>
+                    <th scope="col">Estado</th>
+                    <th scope="col">Comentario</th>
+                    <th scope="col" class="col-acciones"><span class="sr-only">Acciones</span></th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        <div class="tbl-foot" id="piePlan"></div>
+    </div>
+</section>
+
+<dialog class="dlg dlg-xl" id="dlgParte" aria-labelledby="dlgParteTitulo">
+    <form novalidate>
+        <header class="dlg-hd">
+            <h2 id="dlgParteTitulo">Registrar parte de producción</h2>
+            <button type="button" class="dlg-x" data-cerrar aria-label="Cerrar"><svg class="ic"><use href="#i-cerrar" /></svg></button>
+        </header>
+        <div class="dlg-bd">
+            <p class="form-alert" data-error-general hidden role="alert"></p>
+            <p class="version-info" id="pPlanInfo" hidden></p>
+            <div class="form-grid form-grid-3">
+                <div class="field">
+                    <label for="pFecha">Fecha <span class="req" aria-hidden="true">*</span></label>
+                    <input id="pFecha" name="fecha" type="date" class="ctl" required />
+                    <span class="field-error" data-error-de="fecha"></span>
+                </div>
+                <fieldset class="field">
+                    <legend>Turno <span class="req" aria-hidden="true">*</span></legend>
+                    <div class="radio-seg">
+                        <label><input type="radio" name="turno" value="1" data-tipo="numero" checked /><span>Mañana</span></label>
+                        <label><input type="radio" name="turno" value="2" data-tipo="numero" /><span>Tarde</span></label>
+                        <label><input type="radio" name="turno" value="3" data-tipo="numero" /><span>Noche</span></label>
+                    </div>
+                    <span class="field-error" data-error-de="turno"></span>
+                </fieldset>
+                <div class="field">
+                    <label for="pLinea">Línea <span class="req" aria-hidden="true">*</span></label>
+                    <select id="pLinea" name="lineaId" class="ctl" data-tipo="numero" required></select>
+                    <span class="field-error" data-error-de="lineaId"></span>
+                </div>
+                <div class="field">
+                    <label for="pProducto">Producto <span class="req" aria-hidden="true">*</span></label>
+                    <select id="pProducto" name="productoId" class="ctl" data-tipo="numero" required></select>
+                    <span class="field-error" data-error-de="productoId"></span>
+                </div>
+                <div class="field">
+                    <label for="pPaquetes">Paquetes producidos <span class="req" aria-hidden="true">*</span></label>
+                    <input id="pPaquetes" name="paquetes" type="number" class="ctl num" min="1" step="1" inputmode="numeric" data-tipo="numero" required />
+                    <span class="field-error" data-error-de="paquetes"></span>
+                </div>
+                <div class="field">
+                    <label for="pHoras">Horas de operación</label>
+                    <input id="pHoras" name="horasOperacion" type="number" class="ctl num" min="0" max="24" step="0.1" inputmode="decimal" data-tipo="numero" data-opcional />
+                    <span class="field-error" data-error-de="horasOperacion"></span>
+                </div>
+                <div class="field">
+                    <label for="pAlmIns">Descontar insumos de <span class="req" aria-hidden="true">*</span></label>
+                    <select id="pAlmIns" name="almacenInsumosId" class="ctl" data-tipo="numero" required></select>
+                    <span class="field-error" data-error-de="almacenInsumosId"></span>
+                </div>
+                <div class="field">
+                    <label for="pAlmPt">Ingresar paquetes a <span class="req" aria-hidden="true">*</span></label>
+                    <select id="pAlmPt" name="almacenProductoId" class="ctl" data-tipo="numero" required></select>
+                    <span class="field-error" data-error-de="almacenProductoId"></span>
+                </div>
+                <div class="field">
+                    <label for="pObs">Observación</label>
+                    <input id="pObs" name="observacion" class="ctl" maxlength="200" placeholder="Ej.: parada de 20 min por cambio de formato" />
+                    <span class="field-error" data-error-de="observacion"></span>
+                </div>
+            </div>
+            <p class="equivalencia" id="pCapacidad" hidden></p>
+            <div class="requerimiento" id="pReq" aria-live="polite"></div>
+            <span class="field-error" data-error-de="planId"></span>
+        </div>
+        <footer class="dlg-ft">
+            <button type="button" class="btn btn-secondary" data-cerrar>Cancelar</button>
+            <button type="submit" class="btn btn-primary"><svg class="ic"><use href="#i-guardar" /></svg>Registrar parte</button>
+        </footer>
+    </form>
+</dialog>
+
+<dialog class="dlg dlg-lg" id="dlgPlan" aria-labelledby="dlgPlanTitulo">
+    <form novalidate>
+        <header class="dlg-hd">
+            <h2 id="dlgPlanTitulo">Programar producción</h2>
+            <button type="button" class="dlg-x" data-cerrar aria-label="Cerrar"><svg class="ic"><use href="#i-cerrar" /></svg></button>
+        </header>
+        <div class="dlg-bd">
+            <p class="form-alert" data-error-general hidden role="alert"></p>
+            <div class="form-grid">
+                <div class="field">
+                    <label for="lFecha">Fecha <span class="req" aria-hidden="true">*</span></label>
+                    <input id="lFecha" name="fecha" type="date" class="ctl" required />
+                    <span class="field-error" data-error-de="fecha"></span>
+                </div>
+                <div class="field">
+                    <label for="lLinea">Línea <span class="req" aria-hidden="true">*</span></label>
+                    <select id="lLinea" name="lineaId" class="ctl" data-tipo="numero" required></select>
+                    <span class="field-error" data-error-de="lineaId"></span>
+                </div>
+                <div class="field">
+                    <label for="lProducto">Producto <span class="req" aria-hidden="true">*</span></label>
+                    <select id="lProducto" name="productoId" class="ctl" data-tipo="numero" required></select>
+                    <span class="field-error" data-error-de="productoId"></span>
+                </div>
+                <div class="field">
+                    <label for="lPaquetes">Paquetes <span class="req" aria-hidden="true">*</span></label>
+                    <input id="lPaquetes" name="paquetes" type="number" class="ctl num" min="1" step="1" inputmode="numeric" data-tipo="numero" required />
+                    <span class="field-error" data-error-de="paquetes"></span>
+                </div>
+                <div class="field field-full">
+                    <label for="lComentario">Comentario</label>
+                    <input id="lComentario" name="comentario" class="ctl" maxlength="200" />
+                    <span class="field-error" data-error-de="comentario"></span>
+                </div>
+            </div>
+            <p class="equivalencia" id="lCapacidad" hidden></p>
+            <div class="requerimiento" id="lReq" aria-live="polite"></div>
+        </div>
+        <footer class="dlg-ft">
+            <button type="button" class="btn btn-secondary" data-cerrar>Cancelar</button>
+            <button type="submit" class="btn btn-primary"><svg class="ic"><use href="#i-guardar" /></svg>Guardar</button>
+        </footer>
+    </form>
+</dialog>
+
+<dialog class="dlg dlg-lg" id="dlgDetalle" aria-labelledby="dlgDetalleTitulo">
+    <form method="dialog">
+        <header class="dlg-hd">
+            <h2 id="dlgDetalleTitulo">Parte de producción</h2>
+            <button type="button" class="dlg-x" data-cerrar aria-label="Cerrar"><svg class="ic"><use href="#i-cerrar" /></svg></button>
+        </header>
+        <div class="dlg-bd" id="detalleCuerpo"></div>
+        <footer class="dlg-ft"><button type="button" class="btn btn-secondary" data-cerrar>Cerrar</button></footer>
+    </form>
+</dialog>
+
+<dialog class="dlg dlg-sm" id="dlgAnular" aria-labelledby="dlgAnularTitulo">
+    <form novalidate>
+        <header class="dlg-hd">
+            <h2 id="dlgAnularTitulo">Anular parte</h2>
+            <button type="button" class="dlg-x" data-cerrar aria-label="Cerrar"><svg class="ic"><use href="#i-cerrar" /></svg></button>
+        </header>
+        <div class="dlg-bd">
+            <p class="dlg-msg" data-resumen></p>
+            <p class="form-alert" data-error-general hidden role="alert"></p>
+            <div class="field">
+                <label for="aMotivo">Motivo <span class="req" aria-hidden="true">*</span></label>
+                <input id="aMotivo" name="motivo" class="ctl" maxlength="200" required placeholder="Ej.: se registró en la línea equivocada" />
+                <span class="field-error" data-error-de="motivo"></span>
+            </div>
+        </div>
+        <footer class="dlg-ft">
+            <button type="button" class="btn btn-secondary" data-cerrar>Cancelar</button>
+            <button type="submit" class="btn btn-danger"><svg class="ic"><use href="#i-deshacer" /></svg>Anular parte</button>
+        </footer>
+    </form>
+</dialog>
+
+@section Scripts {
+    <script src="~/js/produccion.js" asp-append-version="true"></script>
+}

@@ -1,0 +1,205 @@
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery
+@using System.Security.Claims
+@{
+    var nombre = User.FindFirst(ClaimsSpin.NombreCompleto)?.Value ?? User.Identity?.Name ?? string.Empty;
+    var empresa = User.FindFirst(ClaimsSpin.EmpresaNombre)?.Value ?? string.Empty;
+    var rol = Roles.Etiqueta(User.FindFirst(ClaimTypes.Role)?.Value);
+    var iniciales = string.Concat(nombre.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(p => char.ToUpperInvariant(p[0])));
+    var esAdministracion = User.IsInRole(Roles.SuperAdmin) || User.IsInRole(Roles.Administrador);
+    var esSuperAdmin = User.IsInRole(Roles.SuperAdmin);
+    var csrf = Antiforgery.GetAndStoreTokens(Context).RequestToken;
+}
+@functions {
+    private string Clase(string seccion) =>
+        string.Equals(ViewData["Seccion"] as string, seccion, StringComparison.Ordinal) ? "rail-item is-active" : "rail-item";
+
+    private string? Actual(string seccion) =>
+        string.Equals(ViewData["Seccion"] as string, seccion, StringComparison.Ordinal) ? "page" : null;
+}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="csrf-token" content="@csrf" />
+    <title>@ViewData["Title"] · SPIn</title>
+    <link rel="icon" href="~/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="~/css/spin.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body>
+    <partial name="_Iconos" />
+    <a class="skip-link" href="#contenido">Saltar al contenido</a>
+
+    <header class="hd">
+        <button type="button" class="hd-menu" id="btnMenu" aria-label="Abrir menú" aria-controls="rail" aria-expanded="false">
+            <svg class="ic"><use href="#i-menu" /></svg>
+        </button>
+        <a class="logo" href="/" aria-label="SPIn, ir al inicio">
+            <span class="logo-mk" aria-hidden="true"></span>SPIn
+        </a>
+        <div class="hd-empresa" title="Empresa">
+            <span class="hd-empresa-lbl">Empresa</span>
+            <b>@empresa</b>
+        </div>
+        <div class="hd-sp"></div>
+        <a class="hd-btn hd-campana" href="/alertas" id="hdCampana" title="Alertas" aria-label="Alertas">
+            <svg class="ic"><use href="#i-campana" /></svg>
+            <span class="hd-contador" hidden></span>
+        </a>
+        <div class="hd-user">
+            <div class="hd-user-txt">
+                <span class="hd-user-name">@nombre</span>
+                <span class="hd-user-rol">@rol</span>
+            </div>
+            <span class="hd-avatar" aria-hidden="true">@iniciales</span>
+            <a class="hd-btn" href="/cuenta/cambiar-clave" title="Cambiar contraseña" aria-label="Cambiar contraseña">
+                <svg class="ic"><use href="#i-llave" /></svg>
+            </a>
+            <form method="post" action="/cuenta/salir" class="hd-salir">
+                <input type="hidden" name="__RequestVerificationToken" value="@csrf" />
+                <button type="submit" class="hd-btn" title="Cerrar sesión" aria-label="Cerrar sesión">
+                    <svg class="ic"><use href="#i-salir" /></svg>
+                </button>
+            </form>
+        </div>
+    </header>
+
+    <div class="shell">
+        <nav class="rail" id="rail" aria-label="Menú principal">
+            <div class="rail-group">
+                <a class="@Clase("inicio")" aria-current="@Actual("inicio")" href="/">
+                    <svg class="ic"><use href="#i-inicio" /></svg><span>Inicio</span>
+                </a>
+                <a class="@Clase("alertas")" aria-current="@Actual("alertas")" href="/alertas">
+                    <svg class="ic"><use href="#i-campana" /></svg><span>Alertas</span>
+                </a>
+            </div>
+
+            <div class="rail-group">
+                <p class="rail-title">Producir</p>
+                <a class="@Clase("productos")" aria-current="@Actual("productos")" href="/productos">
+                    <svg class="ic"><use href="#i-botella" /></svg><span>Productos y recetas</span>
+                </a>
+                <a class="@Clase("produccion")" aria-current="@Actual("produccion")" href="/produccion">
+                    <svg class="ic"><use href="#i-fabrica" /></svg><span>Producción</span>
+                </a>
+            </div>
+
+            <div class="rail-group">
+                <p class="rail-title">Almacenar</p>
+                <a class="@Clase("stock")" aria-current="@Actual("stock")" href="/stock">
+                    <svg class="ic"><use href="#i-capas" /></svg><span>Stock de insumos</span>
+                </a>
+                <a class="@Clase("producto-terminado")" aria-current="@Actual("producto-terminado")" href="/producto-terminado">
+                    <svg class="ic"><use href="#i-caja" /></svg><span>Producto terminado</span>
+                </a>
+                <a class="@Clase("movimientos")" aria-current="@Actual("movimientos")" href="/movimientos">
+                    <svg class="ic"><use href="#i-flechas" /></svg><span>Movimientos</span>
+                </a>
+                <a class="@Clase("kardex")" aria-current="@Actual("kardex")" href="/kardex">
+                    <svg class="ic"><use href="#i-libro" /></svg><span>Kardex</span>
+                </a>
+                <a class="@Clase("conteos")" aria-current="@Actual("conteos")" href="/conteos">
+                    <svg class="ic"><use href="#i-portapapeles" /></svg><span>Conteo físico</span>
+                </a>
+                <a class="@Clase("insumos")" aria-current="@Actual("insumos")" href="/insumos">
+                    <svg class="ic"><use href="#i-almacen" /></svg><span>Insumos</span>
+                </a>
+                <a class="@Clase("catalogos")" aria-current="@Actual("catalogos")" href="/categorias-unidades">
+                    <svg class="ic"><use href="#i-etiqueta" /></svg><span>Categorías y unidades</span>
+                </a>
+            </div>
+
+            <div class="rail-group">
+                <p class="rail-title">Planificar</p>
+                <a class="@Clase("pronostico")" aria-current="@Actual("pronostico")" href="/pronostico">
+                    <svg class="ic"><use href="#i-tendencia" /></svg><span>Pronóstico de demanda</span>
+                </a>
+                <a class="@Clase("reposicion")" aria-current="@Actual("reposicion")" href="/reposicion">
+                    <svg class="ic"><use href="#i-reponer" /></svg><span>Reposición de insumos</span>
+                </a>
+            </div>
+
+            <div class="rail-group">
+                <p class="rail-title">Vender</p>
+                <a class="@Clase("ventas")" aria-current="@Actual("ventas")" href="/ventas">
+                    <svg class="ic"><use href="#i-carrito" /></svg><span>Ventas y despachos</span>
+                </a>
+            </div>
+
+            <div class="rail-group">
+                <p class="rail-title">Abastecer</p>
+                <a class="@Clase("proveedores")" aria-current="@Actual("proveedores")" href="/proveedores">
+                    <svg class="ic"><use href="#i-camion" /></svg><span>Proveedores</span>
+                </a>
+                <a class="@Clase("pedidos")" aria-current="@Actual("pedidos")" href="/pedidos">
+                    <svg class="ic"><use href="#i-pedido" /></svg><span>Pedidos en camino</span>
+                </a>
+            </div>
+
+            @if (esAdministracion)
+            {
+                <div class="rail-group">
+                    <p class="rail-title">Estructura de la empresa</p>
+                    <a class="@Clase("plantas")" aria-current="@Actual("plantas")" href="/plantas">
+                        <svg class="ic"><use href="#i-planta" /></svg><span>Plantas</span>
+                    </a>
+                    <a class="@Clase("almacenes")" aria-current="@Actual("almacenes")" href="/almacenes">
+                        <svg class="ic"><use href="#i-estante" /></svg><span>Almacenes</span>
+                    </a>
+                    <a class="@Clase("lineas")" aria-current="@Actual("lineas")" href="/lineas">
+                        <svg class="ic"><use href="#i-linea" /></svg><span>Líneas de producción</span>
+                    </a>
+                </div>
+
+                <div class="rail-group">
+                    <p class="rail-title">Administración</p>
+                    <a class="@Clase("usuarios")" aria-current="@Actual("usuarios")" href="/usuarios">
+                        <svg class="ic"><use href="#i-usuarios" /></svg><span>Usuarios</span>
+                    </a>
+                    <a class="@Clase("importar")" aria-current="@Actual("importar")" href="/importar">
+                        <svg class="ic"><use href="#i-subir" /></svg><span>Importar datos</span>
+                    </a>
+                    <a class="@Clase("configuracion")" aria-current="@Actual("configuracion")" href="/configuracion">
+                        <svg class="ic"><use href="#i-ajustes" /></svg><span>Configuración</span>
+                    </a>
+                    @if (esSuperAdmin)
+                    {
+                        <a class="@Clase("empresas")" aria-current="@Actual("empresas")" href="/empresas">
+                            <svg class="ic"><use href="#i-empresa" /></svg><span>Empresas</span>
+                        </a>
+                    }
+                </div>
+            }
+
+            <p class="rail-version">SPIn · Entrega 9</p>
+        </nav>
+        <div class="rail-overlay" id="railOverlay" hidden></div>
+
+        <main class="main" id="contenido" tabindex="-1">
+            @RenderBody()
+        </main>
+    </div>
+
+    <div class="toast-zone" id="toastZone" aria-live="polite" aria-atomic="false"></div>
+
+    <dialog class="dlg dlg-sm" id="dlgConfirmar" aria-labelledby="dlgConfirmarTitulo">
+        <form method="dialog">
+            <header class="dlg-hd">
+                <h2 id="dlgConfirmarTitulo" data-titulo>Confirmar</h2>
+            </header>
+            <div class="dlg-bd">
+                <p class="dlg-msg" data-mensaje></p>
+            </div>
+            <footer class="dlg-ft">
+                <button type="submit" value="cancelar" class="btn btn-secondary">Cancelar</button>
+                <button type="submit" value="ok" class="btn btn-primary" data-aceptar>Confirmar</button>
+            </footer>
+        </form>
+    </dialog>
+
+    <script src="~/js/spin.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

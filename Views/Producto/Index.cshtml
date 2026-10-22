@@ -1,0 +1,241 @@
+@{
+    ViewData["Title"] = "Productos y recetas";
+    ViewData["Seccion"] = "productos";
+    var puedeProduccion = Roles.PuedeProduccion(User);
+}
+<div class="page-head">
+    <div>
+        <p class="crumb">Producir</p>
+        <h1>Productos y recetas</h1>
+        <p class="page-sub">Cada producto (SKU) con su receta: qué insumos consume por botella, por paquete y por pallet. Con la receta, SPIn convierte producción en consumo de insumos.</p>
+    </div>
+    @if (puedeProduccion)
+    {
+        <div class="page-actions">
+            <button type="button" class="btn btn-primary" id="btnNuevo">
+                <svg class="ic"><use href="#i-mas" /></svg>Nuevo producto
+            </button>
+        </div>
+    }
+</div>
+
+<div class="seg-strip" id="segmentos" role="group" aria-label="Filtrar por estado">
+    <button type="button" class="seg" data-estado="activos" aria-pressed="true">Activos <b data-conteo="activos">–</b></button>
+    <button type="button" class="seg" data-estado="inactivos" aria-pressed="false">Inactivos <b data-conteo="inactivos">–</b></button>
+    <button type="button" class="seg" data-estado="" aria-pressed="false">Todos <b data-conteo="todos">–</b></button>
+</div>
+
+<form class="toolbar" id="filtros" role="search" autocomplete="off">
+    <label class="search">
+        <svg class="ic"><use href="#i-buscar" /></svg>
+        <span class="sr-only">Buscar productos</span>
+        <input type="search" name="buscar" placeholder="SKU, nombre o sabor" maxlength="100" />
+    </label>
+    <label class="select-lbl">
+        <span>Envase</span>
+        <select name="tipoEnvase" class="ctl ctl-sm">
+            <option value="">Todos</option>
+            <option value="1">PET</option>
+            <option value="2">Vidrio retornable</option>
+            <option value="3">Lata</option>
+        </select>
+    </label>
+    <label class="select-lbl">
+        <span>Receta</span>
+        <select name="sinReceta" class="ctl ctl-sm">
+            <option value="">Todos</option>
+            <option value="true">Sin receta</option>
+        </select>
+    </label>
+</form>
+
+<div class="tbl">
+    <table class="dt" id="tabla" data-puede-produccion="@(puedeProduccion ? "true" : "false")">
+        <thead>
+            <tr>
+                <th scope="col">SKU</th>
+                <th scope="col">Producto</th>
+                <th scope="col">Formato</th>
+                <th scope="col" class="num">Empaque</th>
+                <th scope="col">Receta</th>
+                <th scope="col">Estado</th>
+                <th scope="col" class="col-acciones"><span class="sr-only">Acciones</span></th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+    <div class="tbl-foot" id="pie"></div>
+</div>
+
+@* ------------------------------------------------------------ Panel de detalle *@
+<dialog class="drawer" id="drawer" aria-labelledby="drawerTitulo">
+    <header class="drawer-hd">
+        <div>
+            <span class="cel-codigo" data-codigo></span>
+            <h2 id="drawerTitulo" data-nombre>Producto</h2>
+            <span class="estados" data-estados></span>
+        </div>
+        <button type="button" class="drawer-x" data-cerrar aria-label="Cerrar panel"><svg class="ic"><use href="#i-cerrar" /></svg></button>
+    </header>
+    <div class="drawer-bd" data-cuerpo></div>
+    <footer class="drawer-ft">
+        <button type="button" class="btn btn-secondary" data-calcular><svg class="ic"><use href="#i-calculadora" /></svg>Calcular consumo</button>
+        @if (puedeProduccion)
+        {
+            <button type="button" class="btn btn-secondary" data-editar><svg class="ic"><use href="#i-editar" /></svg>Editar producto</button>
+        }
+    </footer>
+</dialog>
+
+@* ------------------------------------------------------------ Formulario de producto *@
+<dialog class="dlg" id="dlgProducto" aria-labelledby="dlgProductoTitulo">
+    <form novalidate>
+        <header class="dlg-hd">
+            <h2 id="dlgProductoTitulo" data-titulo>Registrar producto</h2>
+            <button type="button" class="dlg-x" data-cerrar aria-label="Cerrar"><svg class="ic"><use href="#i-cerrar" /></svg></button>
+        </header>
+        <div class="dlg-bd">
+            <p class="form-alert" data-error-general hidden role="alert"></p>
+            <div class="form-grid">
+                <div class="field">
+                    <label for="pCodigo">SKU <span class="req" aria-hidden="true">*</span></label>
+                    <input id="pCodigo" name="codigo" class="ctl mono" maxlength="20" required />
+                    <small class="hint">Ej.: COL-500-12. Letras, números y guiones.</small>
+                    <span class="field-error" data-error-de="codigo"></span>
+                </div>
+                <div class="field">
+                    <label for="pFormato">Formato <span class="req" aria-hidden="true">*</span></label>
+                    <select id="pFormato" name="formatoId" class="ctl" data-tipo="numero" required></select>
+                    <span class="field-error" data-error-de="formatoId"></span>
+                </div>
+                <div class="field">
+                    <label for="pNombre">Nombre <span class="req" aria-hidden="true">*</span></label>
+                    <input id="pNombre" name="nombre" class="ctl" maxlength="120" required placeholder="Ej.: Gaseosa cola 500 ml x12" />
+                    <span class="field-error" data-error-de="nombre"></span>
+                </div>
+                <div class="field">
+                    <label for="pSabor">Sabor</label>
+                    <input id="pSabor" name="sabor" class="ctl" maxlength="40" placeholder="Ej.: Cola" />
+                    <span class="field-error" data-error-de="sabor"></span>
+                </div>
+                <div class="field">
+                    <label for="pPaquete">Botellas por paquete <span class="req" aria-hidden="true">*</span></label>
+                    <input id="pPaquete" name="unidadesPorPaquete" type="number" class="ctl num" min="1" max="1000" step="1" inputmode="numeric" data-tipo="numero" required />
+                    <span class="field-error" data-error-de="unidadesPorPaquete"></span>
+                </div>
+                <div class="field">
+                    <label for="pPallet">Paquetes por pallet <span class="req" aria-hidden="true">*</span></label>
+                    <input id="pPallet" name="paquetesPorPallet" type="number" class="ctl num" min="1" max="1000" step="1" inputmode="numeric" data-tipo="numero" required />
+                    <span class="field-error" data-error-de="paquetesPorPallet"></span>
+                </div>
+                <p class="equivalencia" id="empaque" aria-live="polite"></p>
+            </div>
+        </div>
+        <footer class="dlg-ft">
+            <button type="button" class="btn btn-secondary" data-cerrar>Cancelar</button>
+            <button type="submit" class="btn btn-primary"><svg class="ic"><use href="#i-guardar" /></svg>Guardar</button>
+        </footer>
+    </form>
+</dialog>
+
+@* ------------------------------------------------------------ Editor de receta *@
+<dialog class="dlg dlg-xl" id="dlgReceta" aria-labelledby="dlgRecetaTitulo">
+    <form novalidate>
+        <header class="dlg-hd">
+            <h2 id="dlgRecetaTitulo" data-titulo>Receta</h2>
+            <button type="button" class="dlg-x" data-cerrar aria-label="Cerrar"><svg class="ic"><use href="#i-cerrar" /></svg></button>
+        </header>
+        <div class="dlg-bd">
+            <p class="contexto" data-contexto></p>
+            <p class="form-alert" data-error-general hidden role="alert"></p>
+
+            <div class="barra-receta">
+                <div class="copiar">
+                    <label class="sr-only" for="rCopiar">Copiar la receta de otro producto</label>
+                    <select id="rCopiar" class="ctl ctl-sm"></select>
+                    <button type="button" class="btn btn-secondary btn-sm" id="btnCopiar"><svg class="ic"><use href="#i-copiar" /></svg>Copiar</button>
+                </div>
+                <button type="button" class="btn btn-secondary btn-sm" id="btnAgregarFila"><svg class="ic"><use href="#i-mas" /></svg>Agregar insumo</button>
+            </div>
+
+            <table class="editor" aria-describedby="rAyuda">
+                <thead>
+                    <tr>
+                        <th scope="col" class="col-num">#</th>
+                        <th scope="col">Insumo</th>
+                        <th scope="col" class="col-cant">Cantidad</th>
+                        <th scope="col" class="col-nivel">Por</th>
+                        <th scope="col" class="col-merma">Merma</th>
+                        <th scope="col" class="col-quitar"><span class="sr-only">Quitar</span></th>
+                    </tr>
+                </thead>
+                <tbody id="filasReceta"></tbody>
+            </table>
+            <p class="hint" id="rAyuda">La cantidad va en la unidad de consumo del insumo. Ej.: 1 preforma por botella, 18 g de film por paquete, 1 parihuela por pallet.</p>
+            <span class="field-error" data-error-de="detalles"></span>
+
+            <div class="form-grid" style="margin-top:14px">
+                <div class="field">
+                    <label for="rDesde">Rige desde <span class="req" aria-hidden="true">*</span></label>
+                    <input id="rDesde" name="vigenteDesde" type="date" class="ctl" required />
+                    <span class="field-error" data-error-de="vigenteDesde"></span>
+                </div>
+                <div class="field">
+                    <label for="rComentario">Comentario del cambio</label>
+                    <input id="rComentario" name="comentario" class="ctl" maxlength="200" placeholder="Ej.: nueva etiqueta de campaña verano" />
+                    <span class="field-error" data-error-de="comentario"></span>
+                </div>
+                <p class="version-info field-full" id="versionInfo" aria-live="polite"></p>
+            </div>
+        </div>
+        <footer class="dlg-ft">
+            <button type="button" class="btn btn-secondary" data-cerrar>Cancelar</button>
+            <button type="submit" class="btn btn-primary"><svg class="ic"><use href="#i-guardar" /></svg>Guardar receta</button>
+        </footer>
+    </form>
+</dialog>
+
+@* ------------------------------------------------------------ Calculadora de consumo *@
+<dialog class="dlg dlg-lg" id="dlgConsumo" aria-labelledby="dlgConsumoTitulo">
+    <form novalidate>
+        <header class="dlg-hd">
+            <h2 id="dlgConsumoTitulo">Calcular consumo de insumos</h2>
+            <button type="button" class="dlg-x" data-cerrar aria-label="Cerrar"><svg class="ic"><use href="#i-cerrar" /></svg></button>
+        </header>
+        <div class="dlg-bd">
+            <p class="dlg-msg">¿Cuánto de cada insumo se necesita para producir <b data-producto></b>? Incluye la merma de la receta. No guarda nada.</p>
+            <p class="form-alert" data-error-general hidden role="alert"></p>
+            <div class="form-grid form-grid-3">
+                <div class="field">
+                    <label for="xCantidad">Cantidad a producir <span class="req" aria-hidden="true">*</span></label>
+                    <input id="xCantidad" name="cantidad" type="number" class="ctl num" min="0.01" step="any" inputmode="decimal" data-tipo="numero" required />
+                    <span class="field-error" data-error-de="cantidad"></span>
+                </div>
+                <fieldset class="field">
+                    <legend>En</legend>
+                    <div class="radio-seg">
+                        <label><input type="radio" name="unidad" value="1" data-tipo="numero" checked /><span>Botellas</span></label>
+                        <label><input type="radio" name="unidad" value="2" data-tipo="numero" /><span>Paquetes</span></label>
+                        <label><input type="radio" name="unidad" value="3" data-tipo="numero" /><span>Pallets</span></label>
+                    </div>
+                    <span class="field-error" data-error-de="unidad"></span>
+                </fieldset>
+                <div class="field">
+                    <label for="xFecha">Fecha de producción</label>
+                    <input id="xFecha" name="fecha" type="date" class="ctl" />
+                    <small class="hint">Define qué versión de la receta se usa.</small>
+                    <span class="field-error" data-error-de="fecha"></span>
+                </div>
+            </div>
+            <div class="resultado-consumo" id="resultadoConsumo" aria-live="polite"></div>
+        </div>
+        <footer class="dlg-ft">
+            <button type="button" class="btn btn-secondary" data-cerrar>Cerrar</button>
+            <button type="submit" class="btn btn-primary"><svg class="ic"><use href="#i-calculadora" /></svg>Calcular</button>
+        </footer>
+    </form>
+</dialog>
+
+@section Scripts {
+    <script src="~/js/producto.js" asp-append-version="true"></script>
+}

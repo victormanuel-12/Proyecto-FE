@@ -1,0 +1,152 @@
+@{
+    ViewData["Title"] = "Producto terminado";
+    ViewData["Seccion"] = "producto-terminado";
+    var puedeAlmacen = Roles.PuedeAlmacen(User);
+}
+<div class="page-head">
+    <div>
+        <p class="crumb">Almacenar</p>
+        <h1>Stock de producto terminado</h1>
+        <p class="page-sub">Paquetes listos para despacho por producto y almacén. Bajan con las ventas que descuentan stock y, desde la Entrega 6, suben con cada parte de producción.</p>
+    </div>
+    @if (puedeAlmacen)
+    {
+        <div class="page-actions">
+            <button type="button" class="btn btn-primary" id="btnNuevo"><svg class="ic"><use href="#i-mas" /></svg>Registrar movimiento</button>
+        </div>
+    }
+</div>
+
+<div class="seg-strip" id="segmentos" role="group" aria-label="Filtrar por existencias">
+    <button type="button" class="seg" data-estado="" aria-pressed="true">Todos</button>
+    <button type="button" class="seg" data-estado="activos" aria-pressed="false"><span class="seg-dot ok"></span>Con stock</button>
+    <button type="button" class="seg" data-estado="inactivos" aria-pressed="false"><span class="seg-dot crit"></span>Sin stock</button>
+</div>
+
+<form class="toolbar" id="filtros" role="search" autocomplete="off">
+    <label class="search">
+        <svg class="ic"><use href="#i-buscar" /></svg>
+        <span class="sr-only">Buscar productos</span>
+        <input type="search" name="buscar" placeholder="SKU o nombre del producto" maxlength="100" />
+    </label>
+    <label class="select-lbl">
+        <span>Almacén</span>
+        <select name="almacenId" class="ctl ctl-sm" id="fAlmacen"><option value="">Todos</option></select>
+    </label>
+</form>
+
+<div class="tbl">
+    <table class="dt" id="tabla" data-puede-almacen="@(puedeAlmacen ? "true" : "false")">
+        <thead>
+            <tr>
+                <th scope="col">SKU</th>
+                <th scope="col">Producto</th>
+                <th scope="col" class="num">Stock</th>
+                <th scope="col">Por almacén</th>
+                <th scope="col" class="num">Venta diaria</th>
+                <th scope="col">Cobertura</th>
+                <th scope="col">Último movimiento</th>
+                <th scope="col" class="col-acciones"><span class="sr-only">Acciones</span></th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+    <div class="tbl-foot" id="pie"></div>
+</div>
+<p class="nota-sec"><svg class="ic"><use href="#i-alerta" /></svg><span>Venta diaria: promedio de los últimos 28 días (paquetes). Cobertura: días que alcanza el stock a ese ritmo de venta.</span></p>
+
+<section class="bloque" id="seccionMovimientos" aria-labelledby="movTitulo">
+    <header class="bloque-hd">
+        <div>
+            <h2 id="movTitulo">Movimientos de producto terminado</h2>
+            <p>Cada entrada y salida con el saldo del almacén después del movimiento.</p>
+        </div>
+        <form id="filtrosMov" autocomplete="off">
+            <label class="select-lbl">
+                <span>Producto</span>
+                <select name="productoId" class="ctl ctl-sm" id="fmProducto"><option value="">Todos</option></select>
+            </label>
+        </form>
+    </header>
+    <div class="tbl">
+        <table class="dt" id="tablaMov">
+            <thead>
+                <tr>
+                    <th scope="col">N°</th>
+                    <th scope="col">Fecha</th>
+                    <th scope="col">Tipo</th>
+                    <th scope="col">Producto</th>
+                    <th scope="col">Almacén</th>
+                    <th scope="col" class="num">Paquetes</th>
+                    <th scope="col" class="num">Saldo</th>
+                    <th scope="col">Documento / motivo</th>
+                    <th scope="col">Usuario</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        <div class="tbl-foot" id="pieMov"></div>
+    </div>
+</section>
+
+<dialog class="dlg dlg-lg" id="dlgMovimiento" aria-labelledby="dlgMovTitulo">
+    <form novalidate>
+        <header class="dlg-hd">
+            <h2 id="dlgMovTitulo">Registrar movimiento de producto terminado</h2>
+            <button type="button" class="dlg-x" data-cerrar aria-label="Cerrar"><svg class="ic"><use href="#i-cerrar" /></svg></button>
+        </header>
+        <div class="dlg-bd">
+            <p class="form-alert" data-error-general hidden role="alert"></p>
+            <fieldset class="form-section">
+                <legend class="form-section-title">Tipo de movimiento</legend>
+                <div class="tipos-mov tipos-mov-4" id="tiposMov">
+                    <label class="tipo-mov"><input type="radio" name="tipo" value="1" data-tipo="numero" /><span class="tipo-card"><b><i class="signo" aria-hidden="true">+</i> Stock inicial</b><small>Paquetes en el almacén al empezar a usar SPIn.</small></span></label>
+                    <label class="tipo-mov"><input type="radio" name="tipo" value="4" data-tipo="numero" /><span class="tipo-card"><b><i class="signo" aria-hidden="true">+</i> Ajuste positivo</b><small>Corrección: hay más de lo registrado.</small></span></label>
+                    <label class="tipo-mov"><input type="radio" name="tipo" value="5" data-tipo="numero" /><span class="tipo-card"><b><i class="signo menos" aria-hidden="true">−</i> Ajuste negativo</b><small>Corrección: hay menos de lo registrado.</small></span></label>
+                    <label class="tipo-mov"><input type="radio" name="tipo" value="6" data-tipo="numero" /><span class="tipo-card"><b><i class="signo menos" aria-hidden="true">−</i> Merma</b><small>Paquetes dañados, vencidos o rotos.</small></span></label>
+                </div>
+                <span class="field-error" data-error-de="tipo"></span>
+            </fieldset>
+            <fieldset class="form-section">
+                <legend class="form-section-title">Detalle</legend>
+                <div class="form-grid">
+                    <div class="field">
+                        <label for="mAlmacen">Almacén <span class="req" aria-hidden="true">*</span></label>
+                        <select id="mAlmacen" name="almacenId" class="ctl" data-tipo="numero" required></select>
+                        <span class="field-error" data-error-de="almacenId"></span>
+                    </div>
+                    <div class="field">
+                        <label for="mProducto">Producto <span class="req" aria-hidden="true">*</span></label>
+                        <select id="mProducto" name="productoId" class="ctl" data-tipo="numero" required></select>
+                        <span class="field-error" data-error-de="productoId"></span>
+                    </div>
+                    <div class="field">
+                        <label for="mPaquetes">Paquetes <span class="req" aria-hidden="true">*</span></label>
+                        <input id="mPaquetes" name="paquetes" type="number" class="ctl num" min="0" step="any" inputmode="decimal" data-tipo="numero" required />
+                        <span class="field-error" data-error-de="paquetes"></span>
+                        <span class="field-error" data-error-de="cantidad"></span>
+                    </div>
+                    <div class="field">
+                        <label for="mDocumento">Documento de respaldo</label>
+                        <input id="mDocumento" name="documento" class="ctl" maxlength="60" />
+                        <span class="field-error" data-error-de="documento"></span>
+                    </div>
+                    <div class="field field-full">
+                        <label for="mMotivo">Motivo <span class="req" aria-hidden="true" id="motivoReq" hidden>*</span></label>
+                        <input id="mMotivo" name="motivo" class="ctl" maxlength="200" />
+                        <span class="field-error" data-error-de="motivo"></span>
+                    </div>
+                    <p class="previsto" id="previsto" aria-live="polite" hidden></p>
+                </div>
+            </fieldset>
+        </div>
+        <footer class="dlg-ft">
+            <button type="button" class="btn btn-secondary" data-cerrar>Cancelar</button>
+            <button type="submit" class="btn btn-primary"><svg class="ic"><use href="#i-guardar" /></svg>Registrar</button>
+        </footer>
+    </form>
+</dialog>
+
+@section Scripts {
+    <script src="~/js/producto-terminado.js" asp-append-version="true"></script>
+}

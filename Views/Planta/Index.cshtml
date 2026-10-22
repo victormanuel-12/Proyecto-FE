@@ -1,0 +1,85 @@
+@{
+    ViewData["Title"] = "Plantas";
+    ViewData["Seccion"] = "plantas";
+}
+<div class="page-head">
+    <div>
+        <p class="crumb">Estructura de la empresa</p>
+        <h1>Plantas</h1>
+        <p class="page-sub">Sedes donde se embotella. Cada planta agrupa sus almacenes y líneas de producción.</p>
+    </div>
+    <div class="page-actions">
+        <button type="button" class="btn btn-primary" id="btnNuevo">
+            <svg class="ic"><use href="#i-mas" /></svg>Nueva planta
+        </button>
+    </div>
+</div>
+
+<div class="seg-strip" id="segmentos" role="group" aria-label="Filtrar por estado">
+    <button type="button" class="seg" data-estado="activos" aria-pressed="true">Activas <b data-conteo="activos">–</b></button>
+    <button type="button" class="seg" data-estado="inactivos" aria-pressed="false">Inactivas <b data-conteo="inactivos">–</b></button>
+    <button type="button" class="seg" data-estado="" aria-pressed="false">Todas <b data-conteo="todos">–</b></button>
+</div>
+
+<form class="toolbar" id="filtros" role="search" autocomplete="off">
+    <label class="search">
+        <svg class="ic"><use href="#i-buscar" /></svg>
+        <span class="sr-only">Buscar plantas</span>
+        <input type="search" name="buscar" placeholder="Código o nombre de la planta" maxlength="100" />
+    </label>
+</form>
+
+<div class="tbl">
+    <table class="dt" id="tabla">
+        <thead>
+            <tr>
+                <th scope="col">Código</th>
+                <th scope="col">Planta</th>
+                <th scope="col" class="num">Almacenes</th>
+                <th scope="col" class="num">Líneas</th>
+                <th scope="col">Estado</th>
+                <th scope="col" class="col-acciones"><span class="sr-only">Acciones</span></th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+    <div class="tbl-foot" id="pie"></div>
+</div>
+
+<dialog class="dlg" id="dlgPlanta" aria-labelledby="dlgPlantaTitulo">
+    <form novalidate>
+        <header class="dlg-hd">
+            <h2 id="dlgPlantaTitulo" data-titulo>Registrar planta</h2>
+            <button type="button" class="dlg-x" data-cerrar aria-label="Cerrar"><svg class="ic"><use href="#i-cerrar" /></svg></button>
+        </header>
+        <div class="dlg-bd">
+            <p class="form-alert" data-error-general hidden role="alert"></p>
+            <div class="form-grid">
+                <div class="field">
+                    <label for="pCodigo">Código <span class="req" aria-hidden="true">*</span></label>
+                    <input id="pCodigo" name="codigo" class="ctl mono" maxlength="10" required aria-describedby="pCodigoAyuda" />
+                    <small class="hint" id="pCodigoAyuda">Ej.: LUR. Letras, números y guiones.</small>
+                    <span class="field-error" data-error-de="codigo"></span>
+                </div>
+                <div class="field">
+                    <label for="pNombre">Nombre <span class="req" aria-hidden="true">*</span></label>
+                    <input id="pNombre" name="nombre" class="ctl" maxlength="100" required />
+                    <span class="field-error" data-error-de="nombre"></span>
+                </div>
+                <div class="field field-full">
+                    <label for="pDireccion">Dirección</label>
+                    <input id="pDireccion" name="direccion" class="ctl" maxlength="200" />
+                    <span class="field-error" data-error-de="direccion"></span>
+                </div>
+            </div>
+        </div>
+        <footer class="dlg-ft">
+            <button type="button" class="btn btn-secondary" data-cerrar>Cancelar</button>
+            <button type="submit" class="btn btn-primary"><svg class="ic"><use href="#i-guardar" /></svg>Guardar</button>
+        </footer>
+    </form>
+</dialog>
+
+@section Scripts {
+    <script src="~/js/planta.js" asp-append-version="true"></script>
+}

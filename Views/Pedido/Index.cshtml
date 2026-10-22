@@ -1,0 +1,195 @@
+@{
+    ViewData["Title"] = "Pedidos";
+    ViewData["Seccion"] = "pedidos";
+    var puedePedir = Roles.PuedeAbastecimiento(User);
+    var puedeRecibir = Roles.PuedeRecibir(User);
+}
+<div class="page-head">
+    <div>
+        <p class="crumb">Abastecer</p>
+        <h1>Pedidos en camino</h1>
+        <p class="page-sub">Pedidos a proveedores y su llegada. Lo pendiente cuenta como stock «en camino» para el pronóstico. Al recibir, SPIn registra las entradas en el kardex convirtiendo a unidad de consumo.</p>
+    </div>
+    @if (puedePedir)
+    {
+        <div class="page-actions">
+            <button type="button" class="btn btn-primary" id="btnNuevo"><svg class="ic"><use href="#i-mas" /></svg>Nuevo pedido</button>
+        </div>
+    }
+</div>
+
+<div class="seg-strip" id="segmentos" role="group" aria-label="Filtrar por estado">
+    <button type="button" class="seg" data-estado="encamino" aria-pressed="true"><span class="seg-dot info"></span>En camino <b data-resumen="enCamino">–</b></button>
+    <button type="button" class="seg" data-estado="atrasados" aria-pressed="false"><span class="seg-dot crit"></span>Atrasados <b data-resumen="atrasados">–</b></button>
+    <button type="button" class="seg" data-estado="recibidos" aria-pressed="false"><span class="seg-dot ok"></span>Recibidos</button>
+    <button type="button" class="seg" data-estado="cancelados" aria-pressed="false">Cancelados</button>
+    <button type="button" class="seg" data-estado="" aria-pressed="false">Todos</button>
+</div>
+<p class="resumen-linea" id="llegan"></p>
+
+<form class="toolbar" id="filtros" role="search" autocomplete="off">
+    <label class="search">
+        <svg class="ic"><use href="#i-buscar" /></svg>
+        <span class="sr-only">Buscar pedidos</span>
+        <input type="search" name="buscar" placeholder="N° de pedido, proveedor o documento" maxlength="100" />
+    </label>
+    <label class="select-lbl"><span>Proveedor</span><select name="proveedorId" class="ctl ctl-sm" id="fProveedor"><option value="">Todos</option></select></label>
+</form>
+
+<div class="tbl">
+    <table class="dt" id="tabla" data-puede-pedir="@(puedePedir ? "true" : "false")" data-puede-recibir="@(puedeRecibir ? "true" : "false")">
+        <thead>
+            <tr>
+                <th scope="col">Pedido</th>
+                <th scope="col">Proveedor</th>
+                <th scope="col">Llegada estimada</th>
+                <th scope="col">Insumos</th>
+                <th scope="col">Avance</th>
+                <th scope="col" class="num">Total</th>
+                <th scope="col">Estado</th>
+                <th scope="col" class="col-acciones"><span class="sr-only">Acciones</span></th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+    <div class="tbl-foot" id="pie"></div>
+</div>
+
+<dialog class="dlg dlg-xl" id="dlgPedido" aria-labelledby="dlgPedidoTitulo">
+    <form novalidate>
+        <header class="dlg-hd">
+            <h2 id="dlgPedidoTitulo">Nuevo pedido</h2>
+            <button type="button" class="dlg-x" data-cerrar aria-label="Cerrar"><svg class="ic"><use href="#i-cerrar" /></svg></button>
+        </header>
+        <div class="dlg-bd">
+            <p class="form-alert" data-error-general hidden role="alert"></p>
+            <div class="form-grid form-grid-3">
+                <div class="field">
+                    <label for="oProveedor">Proveedor <span class="req" aria-hidden="true">*</span></label>
+                    <select id="oProveedor" name="proveedorId" class="ctl" data-tipo="numero" required></select>
+                    <span class="field-error" data-error-de="proveedorId"></span>
+                </div>
+                <div class="field">
+                    <label for="oFecha">Fecha del pedido <span class="req" aria-hidden="true">*</span></label>
+                    <input id="oFecha" name="fechaPedido" type="date" class="ctl" required />
+                    <span class="field-error" data-error-de="fechaPedido"></span>
+                </div>
+                <div class="field">
+                    <label for="oEstimada">Llegada estimada</label>
+                    <input id="oEstimada" name="fechaEstimada" type="date" class="ctl" />
+                    <span class="hint" id="oEstimadaHint"></span>
+                    <span class="field-error" data-error-de="fechaEstimada"></span>
+                </div>
+                <fieldset class="field">
+                    <legend>Moneda</legend>
+                    <div class="radio-seg">
+                        <label><input type="radio" name="moneda" value="1" data-tipo="numero" checked /><span>Soles (S/)</span></label>
+                        <label><input type="radio" name="moneda" value="2" data-tipo="numero" /><span>Dólares (US$)</span></label>
+                    </div>
+                </fieldset>
+                <div class="field">
+                    <label for="oDocumento">N° de orden o cotización</label>
+                    <input id="oDocumento" name="documentoProveedor" class="ctl" maxlength="60" />
+                    <span class="field-error" data-error-de="documentoProveedor"></span>
+                </div>
+                <div class="field">
+                    <label for="oObs">Observación</label>
+                    <input id="oObs" name="observacion" class="ctl" maxlength="200" />
+                    <span class="field-error" data-error-de="observacion"></span>
+                </div>
+            </div>
+
+            <fieldset class="form-section">
+                <legend class="form-section-title">Insumos</legend>
+                <table class="editor" id="lineas">
+                    <thead><tr><th>Insumo</th><th class="col-cant">Cantidad</th><th class="col-cant">Precio unitario</th><th class="col-cant num">Subtotal</th><th class="col-quitar"><span class="sr-only">Quitar</span></th></tr></thead>
+                    <tbody></tbody>
+                </table>
+                <div class="editor-pie">
+                    <button type="button" class="btn btn-secondary btn-sm" id="btnLinea"><svg class="ic"><use href="#i-mas" /></svg>Agregar insumo</button>
+                    <span class="total-pedido" id="totalPedido"></span>
+                </div>
+                <span class="field-error" data-error-de="detalles"></span>
+            </fieldset>
+        </div>
+        <footer class="dlg-ft">
+            <button type="button" class="btn btn-secondary" data-cerrar>Cancelar</button>
+            <button type="submit" class="btn btn-primary"><svg class="ic"><use href="#i-guardar" /></svg>Guardar pedido</button>
+        </footer>
+    </form>
+</dialog>
+
+<dialog class="dlg dlg-xl" id="dlgRecibir" aria-labelledby="dlgRecibirTitulo">
+    <form novalidate>
+        <header class="dlg-hd">
+            <h2 id="dlgRecibirTitulo">Recibir pedido</h2>
+            <button type="button" class="dlg-x" data-cerrar aria-label="Cerrar"><svg class="ic"><use href="#i-cerrar" /></svg></button>
+        </header>
+        <div class="dlg-bd">
+            <p class="contexto" data-resumen></p>
+            <p class="form-alert" data-error-general hidden role="alert"></p>
+            <div class="form-grid form-grid-3">
+                <div class="field">
+                    <label for="rAlmacen">Almacén <span class="req" aria-hidden="true">*</span></label>
+                    <select id="rAlmacen" name="almacenId" class="ctl" data-tipo="numero" required></select>
+                    <span class="field-error" data-error-de="almacenId"></span>
+                </div>
+                <div class="field">
+                    <label for="rGuia">Guía de remisión <span class="req" aria-hidden="true">*</span></label>
+                    <input id="rGuia" name="guia" class="ctl" maxlength="60" required placeholder="Ej.: T001-004512" />
+                    <span class="field-error" data-error-de="guia"></span>
+                </div>
+                <div class="field">
+                    <label for="rObs">Observación</label>
+                    <input id="rObs" name="observacion" class="ctl" maxlength="200" />
+                </div>
+            </div>
+            <table class="editor" id="lineasRecibir">
+                <thead><tr><th>Insumo</th><th class="num">Pedido</th><th class="num">Ya recibido</th><th class="num">Pendiente</th><th class="col-cant">Recibir ahora</th><th>Ingresa al kardex</th></tr></thead>
+                <tbody></tbody>
+            </table>
+            <span class="field-error" data-error-de="detalles"></span>
+        </div>
+        <footer class="dlg-ft">
+            <button type="button" class="btn btn-secondary" data-cerrar>Cancelar</button>
+            <button type="submit" class="btn btn-primary"><svg class="ic"><use href="#i-check" /></svg>Registrar recepción</button>
+        </footer>
+    </form>
+</dialog>
+
+<dialog class="dlg dlg-xl" id="dlgDetalle" aria-labelledby="dlgDetalleTitulo">
+    <form method="dialog">
+        <header class="dlg-hd">
+            <h2 id="dlgDetalleTitulo">Pedido</h2>
+            <button type="button" class="dlg-x" data-cerrar aria-label="Cerrar"><svg class="ic"><use href="#i-cerrar" /></svg></button>
+        </header>
+        <div class="dlg-bd" id="detalleCuerpo"></div>
+        <footer class="dlg-ft"><button type="button" class="btn btn-secondary" data-cerrar>Cerrar</button></footer>
+    </form>
+</dialog>
+
+<dialog class="dlg dlg-sm" id="dlgMotivo" aria-labelledby="dlgMotivoTitulo">
+    <form novalidate>
+        <header class="dlg-hd">
+            <h2 id="dlgMotivoTitulo">Cancelar pedido</h2>
+            <button type="button" class="dlg-x" data-cerrar aria-label="Cerrar"><svg class="ic"><use href="#i-cerrar" /></svg></button>
+        </header>
+        <div class="dlg-bd">
+            <p class="dlg-msg" data-resumen></p>
+            <p class="form-alert" data-error-general hidden role="alert"></p>
+            <div class="field">
+                <label for="mMotivo">Motivo <span class="req" aria-hidden="true">*</span></label>
+                <input id="mMotivo" name="motivo" class="ctl" maxlength="200" required />
+                <span class="field-error" data-error-de="motivo"></span>
+            </div>
+        </div>
+        <footer class="dlg-ft">
+            <button type="button" class="btn btn-secondary" data-cerrar>Volver</button>
+            <button type="submit" class="btn btn-danger" id="btnMotivo">Confirmar</button>
+        </footer>
+    </form>
+</dialog>
+
+@section Scripts {
+    <script src="~/js/pedidos.js" asp-append-version="true"></script>
+}

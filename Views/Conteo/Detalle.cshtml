@@ -1,0 +1,28 @@
+@{
+    ViewData["Title"] = "Conteo físico";
+    ViewData["Seccion"] = "conteos";
+    var puedeAlmacen = Roles.PuedeAlmacen(User);
+}
+<div class="page-head">
+    <div>
+        <p class="crumb"><a href="/conteos">Conteo físico</a> / Detalle</p>
+        <h1 id="titulo">Conteo</h1>
+    </div>
+    <div class="page-actions acciones-pagina" id="acciones" hidden>
+        <a class="btn btn-secondary" id="btnHoja" target="_blank" rel="noopener"><svg class="ic"><use href="#i-imprimir" /></svg>Hoja de conteo</a>
+        @if (puedeAlmacen)
+        {
+            <button type="button" class="btn btn-secondary" id="btnAnular" data-abierto><svg class="ic"><use href="#i-cerrar" /></svg>Anular</button>
+            <button type="button" class="btn btn-secondary" id="btnGuardar" data-abierto><svg class="ic"><use href="#i-guardar" /></svg>Guardar avance</button>
+            <button type="button" class="btn btn-primary" id="btnAprobar" data-abierto><svg class="ic"><use href="#i-check" /></svg>Aprobar y ajustar stock</button>
+        }
+    </div>
+</div>
+
+<div id="pagina" data-conteo="@ViewData["ConteoId"]" data-puede-almacen="@(puedeAlmacen ? "true" : "false")">
+    <div class="drawer-cargando"><span class="spinner" aria-hidden="true"></span>Cargando…</div>
+</div>
+
+@section Scripts {
+    <script src="~/js/conteo-detalle.js" asp-append-version="true"></script>
+}

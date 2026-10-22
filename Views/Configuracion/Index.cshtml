@@ -1,0 +1,95 @@
+@{
+    ViewData["Title"] = "Configuración";
+    ViewData["Seccion"] = "configuracion";
+}
+<div class="page-head">
+    <div>
+        <p class="crumb">Administración</p>
+        <h1>Configuración</h1>
+        <p class="page-sub">Parámetros del motor predictivo, del reentrenamiento automático, de la reposición y del conteo físico de su empresa.</p>
+    </div>
+</div>
+
+<form class="panel config" id="formConfig" novalidate>
+    <p class="form-alert" data-error-general hidden role="alert"></p>
+
+    <fieldset class="form-section">
+        <legend class="form-section-title">Motor predictivo</legend>
+        <div class="form-grid form-grid-3">
+            <div class="field">
+                <label for="cHorizonte">Semanas a pronosticar</label>
+                <input id="cHorizonte" name="semanasHorizonte" type="number" class="ctl num" min="4" max="26" step="1" data-tipo="numero" required />
+                <span class="hint">Entre 4 y 26. Deben cubrir el tiempo de entrega más largo.</span>
+                <span class="field-error" data-error-de="semanasHorizonte"></span>
+            </div>
+            <div class="field">
+                <label for="cValidacion">Semanas de validación</label>
+                <input id="cValidacion" name="semanasValidacion" type="number" class="ctl num" min="2" max="26" step="1" data-tipo="numero" required />
+                <span class="hint">Últimas semanas reales con las que se mide el error (MAPE) y se elige el método.</span>
+                <span class="field-error" data-error-de="semanasValidacion"></span>
+            </div>
+            <div class="field">
+                <label for="cMinimas">Historia mínima</label>
+                <input id="cMinimas" name="semanasMinimas" type="number" class="ctl num" min="4" max="52" step="1" data-tipo="numero" required />
+                <span class="hint">Con menos semanas se usa el promedio de lo disponible.</span>
+                <span class="field-error" data-error-de="semanasMinimas"></span>
+            </div>
+        </div>
+    </fieldset>
+
+    <fieldset class="form-section">
+        <legend class="form-section-title">Reentrenamiento automático</legend>
+        <div class="tipos-mov" id="frecuencias">
+            <label class="tipo-mov"><input type="radio" name="frecuencia" value="1" data-tipo="numero" /><span class="tipo-card"><b>Semanal (recomendado)</b><small>Cada lunes, con la semana anterior ya cerrada.</small></span></label>
+            <label class="tipo-mov"><input type="radio" name="frecuencia" value="2" data-tipo="numero" /><span class="tipo-card"><b>Diario</b><small>Cada día. La semana en curso no se usa: no cambia mucho.</small></span></label>
+            <label class="tipo-mov"><input type="radio" name="frecuencia" value="3" data-tipo="numero" /><span class="tipo-card"><b>Solo manual</b><small>Con el botón «Recalcular pronóstico».</small></span></label>
+        </div>
+        <div class="form-grid form-grid-3" style="margin-top:12px">
+            <div class="field">
+                <label for="cHora">Hora (Perú)</label>
+                <input id="cHora" name="horaReentrenamiento" type="number" class="ctl num" min="0" max="23" step="1" data-tipo="numero" required />
+                <span class="field-error" data-error-de="horaReentrenamiento"></span>
+            </div>
+            <p class="hint field-full" id="proximo"></p>
+        </div>
+        <p class="hint">También se reentrena al iniciar el sistema si quedó pendiente, y en el minuto siguiente a importar ventas o cambiar estos parámetros. Registrar producción o recibir pedidos no reentrena: la reposición se recalcula al instante con el pronóstico vigente.</p>
+    </fieldset>
+
+    <fieldset class="form-section">
+        <legend class="form-section-title">Reposición</legend>
+        <div class="form-grid form-grid-3">
+            <div class="field">
+                <label for="cRevision">Días entre compras (revisión)</label>
+                <input id="cRevision" name="diasRevision" type="number" class="ctl num" min="1" max="60" step="1" data-tipo="numero" required />
+                <span class="hint">La cantidad sugerida cubre el punto de reorden más estos días de consumo.</span>
+                <span class="field-error" data-error-de="diasRevision"></span>
+            </div>
+            <div class="field">
+                <label for="cEntrega">Tiempo de entrega por defecto (días)</label>
+                <input id="cEntrega" name="diasEntregaPorDefecto" type="number" class="ctl num" min="1" max="180" step="1" data-tipo="numero" required />
+                <span class="hint">Para insumos sin proveedor asignado.</span>
+                <span class="field-error" data-error-de="diasEntregaPorDefecto"></span>
+            </div>
+        </div>
+    </fieldset>
+
+    <fieldset class="form-section">
+        <legend class="form-section-title">Conteo físico</legend>
+        <div class="form-grid form-grid-3">
+            <div class="field">
+                <label for="cUmbral">Diferencia que requiere Administrador (%)</label>
+                <input id="cUmbral" name="umbralConteo" type="number" class="ctl num" min="0.5" max="50" step="0.5" data-tipo="numero" required />
+                <span class="field-error" data-error-de="umbralConteo"></span>
+            </div>
+        </div>
+    </fieldset>
+
+    <div class="form-actions">
+        <span class="hint" id="modificado"></span>
+        <button type="submit" class="btn btn-primary"><svg class="ic"><use href="#i-guardar" /></svg>Guardar configuración</button>
+    </div>
+</form>
+
+@section Scripts {
+    <script src="~/js/configuracion.js" asp-append-version="true"></script>
+}
