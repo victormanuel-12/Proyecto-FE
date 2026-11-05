@@ -37,24 +37,48 @@
 </div>
 <p class="nota-sec"><svg class="ic"><use href="#i-alerta" /></svg><span>MAPE: error porcentual promedio en las semanas de validación (lo pronosticado frente a lo que realmente se vendió). Menos de 15 %: bueno; de 15 % a 30 %: aceptable; más de 30 %: bajo. Pulse un producto para ver su gráfico.</span></p>
 
-<section class="bloque detalle-pronostico" id="detalle" hidden aria-labelledby="detalleTitulo">
-    <header class="bloque-hd">
-        <div>
+<section class="bloque detalle-pronostico pd" id="detalle" hidden aria-labelledby="detalleTitulo">
+    <header class="pd-hd">
+        <div class="pd-hd-txt">
+            <p class="pd-codigo" id="detalleCodigo"></p>
             <h2 id="detalleTitulo">Producto</h2>
-            <p id="detalleSub"></p>
+            <p class="pd-sub" id="detalleSub"></p>
         </div>
         <button type="button" class="icon-btn" id="btnCerrarDetalle" title="Cerrar" aria-label="Cerrar detalle"><svg class="ic"><use href="#i-cerrar" /></svg></button>
     </header>
-    <div class="grafico" id="graficoPronostico"></div>
-    <div class="detalle-cols">
-        <div>
-            <h3 class="sub-titulo">Comparación de métodos</h3>
-            <table class="tabla-consumo" id="tablaMetodos"><thead><tr><th>Método</th><th class="num">MAPE</th><th></th></tr></thead><tbody></tbody></table>
-            <p class="hint" id="detalleNota"></p>
+
+    <div class="pd-kpis" id="detalleKpis"></div>
+
+    <div class="pd-card">
+        <div class="pd-card-hd">
+            <div>
+                <h3 class="pd-card-tit">Ventas y pronóstico semanal</h3>
+                <p class="pd-card-sub">Paquetes por semana. Pase el cursor sobre el gráfico para ver el detalle de cada semana.</p>
+            </div>
+            <div class="pd-rango" role="group" aria-label="Periodo mostrado" id="detalleRango">
+                <button type="button" data-meses="6">6 meses</button>
+                <button type="button" data-meses="12" class="is-on">1 año</button>
+                <button type="button" data-meses="0">Todo</button>
+            </div>
         </div>
-        <div>
-            <h3 class="sub-titulo">Pronóstico semanal (paquetes)</h3>
-            <table class="tabla-consumo" id="tablaSemanas"><thead><tr><th>Semana del</th><th class="num">Pronóstico</th><th class="num">Rango 90 %</th></tr></thead><tbody></tbody></table>
+        <div class="pd-leyenda" id="detalleLeyenda"></div>
+        <div class="pd-grafico" id="graficoPronostico"></div>
+    </div>
+
+    <div class="pd-cols">
+        <div class="pd-card">
+            <div class="pd-card-hd"><div><h3 class="pd-card-tit">Comparación de métodos</h3><p class="pd-card-sub">Error en las semanas de validación. Se elige el de menor MAPE.</p></div></div>
+            <div id="tablaMetodos"></div>
+            <p class="pd-nota" id="detalleNota" hidden></p>
+        </div>
+        <div class="pd-card">
+            <div class="pd-card-hd"><div><h3 class="pd-card-tit">Pronóstico por semana</h3><p class="pd-card-sub">Paquetes esperados y rango probable al 90 %.</p></div></div>
+            <div class="pd-tabla-wrap">
+                <table class="pd-tabla" id="tablaSemanas">
+                    <thead><tr><th scope="col">Semana</th><th scope="col" class="num">Pronóstico</th><th scope="col" class="num">vs. sem. ant.</th><th scope="col">Rango 90 %</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
         </div>
     </div>
 </section>
