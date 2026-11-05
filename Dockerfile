@@ -18,9 +18,15 @@ ENV ASPNETCORE_HTTP_PORTS=8080 \
     App__RutaClavesProteccion=/app/data/keys \
     App__RedirigirHttps=false
 
-# Entrega 8: ML.NET (pronóstico SSA) usa Intel MKL, que en Linux necesita la librería OpenMP de GNU.
+# Entrega 8: ML.NET (pronóstico SSA) usa Intel MKL. En Linux libMklImports.so necesita:
+#  - libgomp1 (OpenMP de GNU)
+#  - libiomp5.so (OpenMP de Intel): lo provee la OpenMP de LLVM (libomp) mediante un enlace.
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends libgomp1 \
+    && apt-get install -y --no-install-recommends libgomp1 libomp-dev \
+    && if [ ! -e /usr/lib/x86_64-linux-gnu/libiomp5.so ]; then \
+         ln -s "$(find / -name 'libomp.so.5' -not -path '/proc/*' 2>/dev/null | head -1)" /usr/lib/x86_64-linux-gnu/libiomp5.so; \
+       fi \
+    && ldconfig \
     && rm -rf /var/lib/apt/lists/*
 
 # La carpeta de datos pertenece al usuario sin privilegios de la imagen oficial ($APP_UID).
